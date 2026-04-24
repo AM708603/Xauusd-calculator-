@@ -3,779 +3,530 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>XAUUSD Risk Calculator — Prop Firm Edition</title>
+<title>XAUUSD Prop Firm Calculator</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
-
-  :root {
-    --bg:        #0a0c10;
-    --surface:   #0f1318;
-    --card:      #141920;
-    --border:    #1e2630;
-    --border2:   #252f3d;
-    --gold:      #f0b429;
-    --gold2:     #e09f1c;
-    --gold-dim:  rgba(240,180,41,0.12);
-    --green:     #22c55e;
-    --green-dim: rgba(34,197,94,0.12);
-    --red:       #ef4444;
-    --red-dim:   rgba(239,68,68,0.12);
-    --blue:      #3b82f6;
-    --blue-dim:  rgba(59,130,246,0.12);
-    --amber:     #f59e0b;
-    --amber-dim: rgba(245,158,11,0.12);
-    --text:      #e2e8f0;
-    --text-muted:#64748b;
-    --text-dim:  #94a3b8;
-    --mono:      'Share Tech Mono', monospace;
-    --sans:      'Rajdhani', sans-serif;
-    --radius:    10px;
-    --glow:      0 0 20px rgba(240,180,41,0.15);
-  }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 15px;
-    min-height: 100vh;
-    padding: 0;
-  }
-
-  /* Background grid */
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image:
-      linear-gradient(rgba(240,180,41,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(240,180,41,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .wrapper {
-    position: relative; z-index: 1;
-    max-width: 520px;
-    margin: 0 auto;
-    padding: 16px 14px 40px;
-  }
-
-  /* ── Header ── */
-  header {
-    text-align: center;
-    padding: 22px 0 18px;
-  }
-  .logo-row {
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    margin-bottom: 4px;
-  }
-  .logo-icon {
-    width: 36px; height: 36px;
-    background: var(--gold);
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px;
-    box-shadow: 0 0 16px rgba(240,180,41,0.4);
-    flex-shrink: 0;
-  }
-  header h1 {
-    font-size: 22px; font-weight: 700; letter-spacing: 2px;
-    color: var(--gold);
-    text-shadow: 0 0 12px rgba(240,180,41,0.4);
-  }
-  header .subtitle {
-    font-size: 11px; letter-spacing: 3px; color: var(--text-muted);
-    text-transform: uppercase; margin-top: 2px;
-    font-family: var(--mono);
-  }
-
-  /* ── Account Banner ── */
-  .account-banner {
-    background: var(--card);
-    border: 1px solid var(--border2);
-    border-radius: var(--radius);
-    padding: 12px 16px;
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 14px;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .account-stat {
-    text-align: center;
-    flex: 1; min-width: 70px;
-  }
-  .account-stat .val {
-    font-family: var(--mono);
-    font-size: 15px; font-weight: 600;
-    color: var(--gold);
-  }
-  .account-stat .lbl {
-    font-size: 10px; letter-spacing: 1px;
-    color: var(--text-muted); text-transform: uppercase;
-    margin-top: 2px;
-  }
-  .account-banner .divider {
-    width: 1px; height: 32px; background: var(--border2);
-  }
-
-  /* ── Card ── */
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-    margin-bottom: 12px;
-  }
-  .card-title {
-    font-size: 11px; letter-spacing: 2px; font-weight: 600;
-    color: var(--text-muted); text-transform: uppercase;
-    margin-bottom: 12px;
-    display: flex; align-items: center; gap: 7px;
-  }
-  .card-title span { color: var(--gold); font-size: 14px; }
-
-  /* ── Inputs ── */
-  .input-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-  }
-  .input-group {
-    display: flex; flex-direction: column; gap: 5px;
-  }
-  .input-group.full { grid-column: 1 / -1; }
-  .input-group label {
-    font-size: 11px; letter-spacing: 1.5px; color: var(--text-muted);
-    text-transform: uppercase; font-weight: 600;
-  }
-  .input-group label .req { color: var(--gold); margin-left: 2px; }
-  .input-wrap {
-    position: relative;
-  }
-  .input-wrap .prefix {
-    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-    font-family: var(--mono); font-size: 13px; color: var(--text-muted);
-    pointer-events: none;
-  }
-  input[type="number"] {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: 7px;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 14px;
-    padding: 10px 10px 10px 28px;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    -moz-appearance: textfield;
-  }
-  input[type="number"]::-webkit-inner-spin-button,
-  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
-  input[type="number"]:focus {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 2px rgba(240,180,41,0.15);
-  }
-  input[type="number"].has-val { border-color: var(--border2); }
-  input[type="number"].warn { border-color: var(--amber) !important; }
-  input[type="number"].danger { border-color: var(--red) !important; }
-
-  .input-hint {
-    font-size: 10px; color: var(--text-muted); letter-spacing: 0.5px;
-    font-family: var(--mono);
-  }
-
-  /* Risk slider */
-  .risk-row {
-    display: flex; align-items: center; gap: 10px; margin-top: 8px;
-  }
-  .risk-row label {
-    font-size: 11px; letter-spacing: 1.5px; color: var(--text-muted);
-    text-transform: uppercase; font-weight: 600; white-space: nowrap;
-  }
-  input[type="range"] {
-    flex: 1;
-    -webkit-appearance: none;
-    height: 4px;
-    background: var(--border2);
-    border-radius: 2px;
-    outline: none;
-  }
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 16px; height: 16px;
-    border-radius: 50%;
-    background: var(--gold);
-    cursor: pointer;
-    box-shadow: 0 0 6px rgba(240,180,41,0.5);
-  }
-  input[type="range"]::-moz-range-thumb {
-    width: 16px; height: 16px;
-    border-radius: 50%;
-    background: var(--gold);
-    cursor: pointer;
-    border: none;
-  }
-  .risk-val {
-    font-family: var(--mono); font-size: 14px;
-    color: var(--gold); min-width: 40px; text-align: right;
-  }
-
-  /* Account size input */
-  .account-row {
-    display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap;
-  }
-  .account-row .input-group { flex: 1; min-width: 100px; }
-  .preset-btns { display: flex; gap: 6px; padding-bottom: 1px; }
-  .preset-btn {
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: 6px;
-    color: var(--text-dim);
-    font-family: var(--mono); font-size: 11px;
-    padding: 8px 9px;
-    cursor: pointer;
-    transition: all 0.15s;
-    white-space: nowrap;
-  }
-  .preset-btn:hover, .preset-btn.active {
-    background: var(--gold-dim); border-color: var(--gold); color: var(--gold);
-  }
-
-  /* ── Trade Type Badge ── */
-  .trade-type-row {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 12px;
-  }
-  #tradeBadge {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-family: var(--mono); font-size: 13px; font-weight: 700;
-    letter-spacing: 2px;
-    transition: all 0.2s;
-  }
-  #tradeBadge.buy {
-    background: var(--green-dim); border: 1px solid var(--green);
-    color: var(--green);
-  }
-  #tradeBadge.sell {
-    background: var(--red-dim); border: 1px solid var(--red);
-    color: var(--red);
-  }
-  #tradeBadge.none {
-    background: var(--border); border: 1px solid var(--border2);
-    color: var(--text-muted);
-  }
-  #statusBadge {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 5px 12px; border-radius: 20px;
-    font-size: 11px; letter-spacing: 1.5px; font-weight: 700;
-    transition: all 0.2s;
-  }
-  #statusBadge.safe {
-    background: var(--green-dim); border: 1px solid var(--green);
-    color: var(--green);
-  }
-  #statusBadge.risky {
-    background: var(--amber-dim); border: 1px solid var(--amber);
-    color: var(--amber);
-  }
-  #statusBadge.danger {
-    background: var(--red-dim); border: 1px solid var(--red);
-    color: var(--red);
-  }
-  #statusBadge.idle {
-    background: var(--border); border: 1px solid var(--border2);
-    color: var(--text-muted);
-  }
-
-  /* ── Results Grid ── */
-  .results-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-  }
-  .result-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 14px;
-    transition: border-color 0.2s;
-  }
-  .result-box.highlight { border-color: var(--gold); background: var(--gold-dim); }
-  .result-box.green { border-color: var(--green); background: var(--green-dim); }
-  .result-box.red { border-color: var(--red); background: var(--red-dim); }
-  .result-box.blue { border-color: var(--blue); background: var(--blue-dim); }
-  .result-box .r-label {
-    font-size: 10px; letter-spacing: 1.5px; color: var(--text-muted);
-    text-transform: uppercase; margin-bottom: 5px; font-weight: 600;
-  }
-  .result-box .r-value {
-    font-family: var(--mono); font-size: 18px; font-weight: 700;
-    color: var(--text); line-height: 1;
-  }
-  .result-box.green .r-value { color: var(--green); }
-  .result-box.red .r-value { color: var(--red); }
-  .result-box.highlight .r-value { color: var(--gold); }
-  .result-box.blue .r-value { color: var(--blue); }
-  .result-box .r-sub {
-    font-size: 10px; color: var(--text-muted); margin-top: 3px;
-    font-family: var(--mono);
-  }
-
-  /* RR Bar */
-  .rr-section { margin-top: 10px; }
-  .rr-bar-wrap {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; padding: 12px 14px;
-  }
-  .rr-bar-title {
-    font-size: 10px; letter-spacing: 1.5px; color: var(--text-muted);
-    text-transform: uppercase; margin-bottom: 8px; font-weight: 600;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .rr-bar-title span { font-family: var(--mono); font-size: 14px; color: var(--gold); }
-  .rr-visual {
-    display: flex; height: 8px; border-radius: 4px; overflow: hidden; gap: 2px;
-  }
-  .rr-risk-bar {
-    background: var(--red); border-radius: 3px;
-    transition: width 0.4s ease;
-    min-width: 4px;
-  }
-  .rr-reward-bar {
-    background: var(--green); border-radius: 3px;
-    transition: width 0.4s ease;
-    flex: 1;
-  }
-  .rr-labels {
-    display: flex; justify-content: space-between; margin-top: 5px;
-    font-size: 10px; color: var(--text-muted); font-family: var(--mono);
-  }
-
-  /* Points info */
-  .points-row {
-    display: flex; gap: 8px; margin-top: 10px;
-  }
-  .point-box {
-    flex: 1; background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; padding: 10px 12px; text-align: center;
-  }
-  .point-box .pb-val {
-    font-family: var(--mono); font-size: 16px; color: var(--text-dim);
-    font-weight: 600;
-  }
-  .point-box .pb-lbl {
-    font-size: 10px; color: var(--text-muted); letter-spacing: 1px;
-    text-transform: uppercase; margin-top: 2px;
-  }
-
-  /* ── Warnings ── */
-  #warningsBox { margin-top: 10px; }
-  .warning-item {
-    display: flex; align-items: flex-start; gap: 8px;
-    background: var(--red-dim); border: 1px solid rgba(239,68,68,0.3);
-    border-radius: 7px; padding: 10px 12px; margin-bottom: 6px;
-    font-size: 13px; line-height: 1.4;
-  }
-  .warning-item.warn-amber {
-    background: var(--amber-dim); border-color: rgba(245,158,11,0.3);
-  }
-  .warning-item.warn-blue {
-    background: var(--blue-dim); border-color: rgba(59,130,246,0.3);
-  }
-  .warning-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
-
-  /* ── Buttons ── */
-  .btn-row {
-    display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;
-  }
-  .btn {
-    flex: 1; min-width: 100px;
-    padding: 11px 14px;
-    border-radius: 8px;
-    font-family: var(--sans); font-size: 13px; font-weight: 700;
-    letter-spacing: 1px; cursor: pointer;
-    border: 1px solid transparent;
-    transition: all 0.15s;
-    text-transform: uppercase;
-  }
-  .btn-gold {
-    background: var(--gold); color: #000; border-color: var(--gold);
-  }
-  .btn-gold:hover { background: var(--gold2); }
-  .btn-outline {
-    background: transparent; color: var(--text-dim); border-color: var(--border2);
-  }
-  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
-  .btn-green {
-    background: var(--green-dim); color: var(--green); border-color: var(--green);
-  }
-  .btn-green:hover { background: rgba(34,197,94,0.2); }
-  .btn-red {
-    background: var(--red-dim); color: var(--red); border-color: var(--red);
-  }
-  .btn-red:hover { background: rgba(239,68,68,0.2); }
-
-  /* ── Trade Log ── */
-  .log-section { margin-top: 8px; }
-  .log-list { max-height: 220px; overflow-y: auto; }
-  .log-list::-webkit-scrollbar { width: 4px; }
-  .log-list::-webkit-scrollbar-track { background: transparent; }
-  .log-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
-  .log-empty {
-    text-align: center; color: var(--text-muted); font-family: var(--mono);
-    font-size: 12px; padding: 20px 0;
-  }
-  .log-item {
-    display: flex; align-items: center; gap: 8px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 7px; padding: 9px 12px; margin-bottom: 6px;
-    font-size: 12px; font-family: var(--mono);
-    animation: fadeIn 0.2s ease;
-  }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
-  .log-item .log-badge {
-    padding: 2px 7px; border-radius: 4px;
-    font-size: 10px; font-weight: 700; letter-spacing: 1px;
-    flex-shrink: 0;
-  }
-  .log-item .log-badge.buy { background: var(--green-dim); color: var(--green); }
-  .log-item .log-badge.sell { background: var(--red-dim); color: var(--red); }
-  .log-item .log-info { flex: 1; color: var(--text-dim); line-height: 1.6; }
-  .log-item .log-rr { color: var(--gold); margin-left: auto; white-space: nowrap; }
-  .log-item .log-del {
-    background: none; border: none; cursor: pointer;
-    color: var(--text-muted); font-size: 14px; padding: 0 2px;
-    transition: color 0.15s;
-  }
-  .log-item .log-del:hover { color: var(--red); }
-
-  /* Log stats */
-  .log-stats {
-    display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;
-  }
-  .log-stat {
-    flex: 1; min-width: 80px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 7px; padding: 8px 12px; text-align: center;
-  }
-  .log-stat .ls-val { font-family: var(--mono); font-size: 15px; font-weight: 600; }
-  .log-stat .ls-lbl { font-size: 10px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
-
-  /* ── Collapse ── */
-  .collapse-btn {
-    background: none; border: none; cursor: pointer;
-    display: flex; align-items: center; gap: 6px;
-    font-family: var(--sans); font-size: 11px; letter-spacing: 2px;
-    color: var(--text-muted); text-transform: uppercase; font-weight: 600;
-    padding: 0; width: 100%;
-    justify-content: space-between;
-  }
-  .collapse-btn:hover { color: var(--text-dim); }
-  .collapse-btn .arrow { transition: transform 0.2s; font-size: 10px; }
-  .collapse-btn.open .arrow { transform: rotate(180deg); }
-  .collapsible { overflow: hidden; transition: max-height 0.3s ease; }
-
-  /* Pip guide */
-  .pip-guide {
-    background: var(--surface); border: 1px solid var(--border2);
-    border-radius: 8px; padding: 12px;
-    font-family: var(--mono); font-size: 11px;
-    color: var(--text-muted); line-height: 1.9;
-    margin-top: 10px;
-  }
-  .pip-guide .ph { color: var(--gold); font-weight: 700; }
-  .pip-guide .pl { color: var(--text-dim); }
-
-  /* ── Responsive ── */
-  @media (max-width: 400px) {
-    .results-grid { grid-template-columns: 1fr; }
-    .input-grid { grid-template-columns: 1fr; }
-    .input-group.full { grid-column: auto; }
-    header h1 { font-size: 18px; }
-    .account-banner { gap: 4px; }
-  }
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
+:root{
+  --bg:#080b0f;--surface:#0d1117;--card:#111720;--border:#1a2230;--border2:#1f2d40;
+  --gold:#f0b429;--gold2:#d4a017;--gold-dim:rgba(240,180,41,0.1);
+  --green:#22c55e;--green-dim:rgba(34,197,94,0.1);
+  --red:#ef4444;--red-dim:rgba(239,68,68,0.1);
+  --blue:#3b82f6;--blue-dim:rgba(59,130,246,0.1);
+  --amber:#f59e0b;--amber-dim:rgba(245,158,11,0.1);
+  --purple:#a855f7;--purple-dim:rgba(168,85,247,0.1);
+  --text:#dde4ef;--muted:#4e6070;--dim:#7a92a8;
+  --mono:'Share Tech Mono',monospace;--sans:'Rajdhani',sans-serif;--r:10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(240,180,41,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(240,180,41,0.025) 1px,transparent 1px);
+  background-size:44px 44px;pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:540px;margin:0 auto;padding:14px 13px 50px}
+header{text-align:center;padding:20px 0 16px}
+.logo-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:3px}
+.logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:9px;
+  display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 20px rgba(240,180,41,0.45)}
+header h1{font-size:22px;font-weight:700;letter-spacing:2.5px;color:var(--gold);text-shadow:0 0 14px rgba(240,180,41,0.4)}
+header .sub{font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-top:2px;font-family:var(--mono)}
+.challenge-panel{background:var(--card);border:1px solid var(--border2);border-radius:var(--r);padding:14px 16px;margin-bottom:12px}
+.cp-title{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:10px;
+  display:flex;align-items:center;justify-content:space-between}
+.badge-firm{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:4px;
+  background:var(--gold-dim);border:1px solid rgba(240,180,41,0.3);color:var(--gold)}
+.cp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.cp-stat{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 10px;text-align:center}
+.cp-stat .csv{font-family:var(--mono);font-size:14px;font-weight:700}
+.cp-stat .csl{font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-top:2px}
+.cp-stat .css2{font-size:9px;color:var(--muted);font-family:var(--mono);margin-top:1px}
+.prog-row{margin-bottom:8px}
+.prog-label{display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px}
+.pl-name{color:var(--dim);letter-spacing:1px;text-transform:uppercase;font-weight:600}
+.pl-val{font-family:var(--mono);font-size:10px}
+.prog-track{height:6px;background:var(--border2);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width 0.4s ease}
+.pf-profit{background:linear-gradient(90deg,var(--green),#16a34a)}
+.pf-daily{background:linear-gradient(90deg,var(--amber),var(--red))}
+.pf-total{background:linear-gradient(90deg,var(--blue),var(--purple))}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:15px;margin-bottom:11px}
+.card-title{font-size:10px;letter-spacing:2px;font-weight:700;color:var(--muted);text-transform:uppercase;
+  margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.ct-icon{color:var(--gold);font-size:14px}
+.input-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.ig{display:flex;flex-direction:column;gap:5px}
+.ig.full{grid-column:1/-1}
+.ig label{font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;font-weight:700}
+.req{color:var(--gold)}
+.inp-wrap{position:relative}
+.pfx{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:12px;color:var(--muted);pointer-events:none}
+input[type=number]{width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:7px;
+  color:var(--text);font-family:var(--mono);font-size:14px;padding:10px 10px 10px 26px;outline:none;
+  transition:border-color .2s,box-shadow .2s;-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+input[type=number]:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(240,180,41,0.15)}
+.inp-hint{font-size:9px;color:var(--muted);font-family:var(--mono)}
+.risk-row{display:flex;align-items:center;gap:10px;margin-top:9px}
+.risk-row label{font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;font-weight:700;white-space:nowrap}
+input[type=range]{flex:1;-webkit-appearance:none;height:4px;background:var(--border2);border-radius:2px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--gold);cursor:pointer;box-shadow:0 0 6px rgba(240,180,41,0.5)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--gold);cursor:pointer;border:none}
+.risk-val{font-family:var(--mono);font-size:14px;color:var(--gold);min-width:42px;text-align:right}
+.preset-btns{display:flex;gap:5px;flex-wrap:wrap}
+.pbtn{background:var(--surface);border:1px solid var(--border2);border-radius:6px;
+  color:var(--dim);font-family:var(--mono);font-size:11px;padding:7px 9px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.pbtn:hover,.pbtn.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+.badge-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:7px}
+#tradeBadge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;
+  font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:2px;transition:all .2s}
+#tradeBadge.buy{background:var(--green-dim);border:1px solid var(--green);color:var(--green)}
+#tradeBadge.sell{background:var(--red-dim);border:1px solid var(--red);color:var(--red)}
+#tradeBadge.none{background:var(--border);border:1px solid var(--border2);color:var(--muted)}
+#statusBadge{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;
+  font-size:10px;letter-spacing:1.5px;font-weight:700;transition:all .2s}
+#statusBadge.safe{background:var(--green-dim);border:1px solid var(--green);color:var(--green)}
+#statusBadge.ok{background:var(--amber-dim);border:1px solid var(--amber);color:var(--amber)}
+#statusBadge.danger{background:var(--red-dim);border:1px solid var(--red);color:var(--red)}
+#statusBadge.idle{background:var(--border);border:1px solid var(--border2);color:var(--muted)}
+.results-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.rbox{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px 13px;transition:all .2s}
+.rbox.g{border-color:var(--green);background:var(--green-dim)}
+.rbox.r{border-color:var(--red);background:var(--red-dim)}
+.rbox.go{border-color:var(--gold);background:var(--gold-dim)}
+.rbox.b{border-color:var(--blue);background:var(--blue-dim)}
+.rbox.am{border-color:var(--amber);background:var(--amber-dim)}
+.rbox .rl{font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:5px;font-weight:700}
+.rbox .rv{font-family:var(--mono);font-size:18px;font-weight:700;line-height:1}
+.rbox.g .rv{color:var(--green)}.rbox.r .rv{color:var(--red)}.rbox.go .rv{color:var(--gold)}.rbox.b .rv{color:var(--blue)}.rbox.am .rv{color:var(--amber)}
+.rbox .rs{font-size:9px;color:var(--muted);margin-top:3px;font-family:var(--mono)}
+.rr-wrap{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:9px}
+.rr-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.rh-l{font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;font-weight:700}
+.rh-r{font-family:var(--mono);font-size:14px;color:var(--gold)}
+.rr-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;gap:2px}
+.rr-risk{background:var(--red);border-radius:3px;transition:width .4s ease;min-width:3px}
+.rr-reward{background:var(--green);border-radius:3px;flex:1}
+.rr-foot{display:flex;justify-content:space-between;margin-top:5px;font-size:9px;color:var(--muted);font-family:var(--mono)}
+.pts-row{display:flex;gap:7px;margin-top:9px}
+.pbox{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;text-align:center}
+.pbox .pv{font-family:var(--mono);font-size:15px;color:var(--dim);font-weight:600}
+.pbox .pl{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.advisor-panel{background:linear-gradient(135deg,rgba(168,85,247,0.06),rgba(59,130,246,0.06));
+  border:1px solid rgba(168,85,247,0.25);border-radius:var(--r);padding:14px;margin-bottom:11px}
+.advisor-title{font-size:10px;letter-spacing:2px;font-weight:700;color:var(--purple);text-transform:uppercase;
+  display:flex;align-items:center;gap:7px;margin-bottom:11px}
+.ai-dot{width:7px;height:7px;border-radius:50%;background:var(--purple);box-shadow:0 0 8px var(--purple);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.adv-lot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px}
+.adv-lot{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:9px 10px;
+  text-align:center;cursor:pointer;transition:all .15s}
+.adv-lot:hover{border-color:var(--purple);background:var(--purple-dim)}
+.adv-lot.recommended{border-color:var(--gold);background:var(--gold-dim)}
+.al-name{font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:4px}
+.al-val{font-family:var(--mono);font-size:17px;font-weight:700;color:var(--text)}
+.adv-lot.recommended .al-val{color:var(--gold)}
+.al-sub{font-size:9px;color:var(--muted);font-family:var(--mono);margin-top:2px}
+.al-badge{font-size:8px;padding:2px 5px;border-radius:3px;margin-top:4px;display:inline-block;font-weight:700;letter-spacing:.5px}
+.adv-tip{background:var(--surface);border:1px solid var(--border2);border-radius:7px;padding:10px 12px;
+  font-size:12px;line-height:1.6;color:var(--dim)}
+#warningsBox{margin-top:9px}
+.warn-item{display:flex;align-items:flex-start;gap:8px;border-radius:7px;padding:9px 12px;margin-bottom:6px;font-size:12px;line-height:1.5}
+.wr{background:var(--red-dim);border:1px solid rgba(239,68,68,0.25)}
+.wam{background:var(--amber-dim);border:1px solid rgba(245,158,11,0.25)}
+.wbl{background:var(--blue-dim);border:1px solid rgba(59,130,246,0.25)}
+.wgr{background:var(--green-dim);border:1px solid rgba(34,197,94,0.25)}
+.wi{font-size:14px;flex-shrink:0;margin-top:1px}
+.btn-row{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap}
+.btn{flex:1;min-width:90px;padding:10px 12px;border-radius:8px;font-family:var(--sans);font-size:13px;
+  font-weight:700;letter-spacing:1px;cursor:pointer;border:1px solid transparent;transition:all .15s;text-transform:uppercase}
+.btn-gold{background:var(--gold);color:#000;border-color:var(--gold)}
+.btn-gold:hover{background:var(--gold2)}
+.btn-outline{background:transparent;color:var(--dim);border-color:var(--border2)}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-green{background:var(--green-dim);color:var(--green);border-color:var(--green)}
+.btn-green:hover{background:rgba(34,197,94,.2)}
+.btn-red{background:var(--red-dim);color:var(--red);border-color:var(--red)}
+.btn-red:hover{background:rgba(239,68,68,.2)}
+.col-btn{background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;
+  font-family:var(--sans);font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-weight:700;padding:0;width:100%}
+.col-btn:hover{color:var(--dim)}
+.arr{transition:transform .2s;font-size:10px}
+.col-btn.open .arr{transform:rotate(180deg)}
+.collapsible{overflow:hidden;transition:max-height .3s ease}
+.log-stats{display:flex;gap:7px;margin-bottom:9px;flex-wrap:wrap}
+.lstat{flex:1;min-width:75px;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 11px;text-align:center}
+.lsv{font-family:var(--mono);font-size:14px;font-weight:600}
+.lsl{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.log-list{max-height:210px;overflow-y:auto}
+.log-list::-webkit-scrollbar{width:3px}
+.log-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.log-empty{text-align:center;color:var(--muted);font-family:var(--mono);font-size:12px;padding:18px 0}
+.log-item{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border);
+  border-radius:7px;padding:8px 11px;margin-bottom:5px;font-size:11px;font-family:var(--mono);animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+.lbadge{padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:1px;flex-shrink:0}
+.lbadge.buy{background:var(--green-dim);color:var(--green)}
+.lbadge.sell{background:var(--red-dim);color:var(--red)}
+.l-info{flex:1;color:var(--dim);line-height:1.7}
+.l-rr{color:var(--gold);margin-left:auto;white-space:nowrap}
+.l-del{background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;padding:0 2px;transition:color .15s}
+.l-del:hover{color:var(--red)}
+.pip-guide{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:12px;
+  font-family:var(--mono);font-size:11px;color:var(--muted);line-height:2;margin-top:11px}
+.ph{color:var(--gold);font-weight:700}
+.pv2{color:var(--dim)}
+@media(max-width:400px){
+  .results-grid,.input-grid{grid-template-columns:1fr}
+  .ig.full{grid-column:auto}
+  .adv-lot-grid{grid-template-columns:1fr 1fr}
+  .cp-grid{grid-template-columns:1fr 1fr}
+}
 </style>
 </head>
 <body>
-<div class="wrapper">
+<div class="wrap">
 
-  <!-- Header -->
-  <header>
-    <div class="logo-row">
-      <div class="logo-icon">⚡</div>
-      <h1>XAUUSD CALC</h1>
-    </div>
-    <div class="subtitle">Prop Firm Risk Calculator · Gold Edition</div>
-  </header>
+<header>
+  <div class="logo-row">
+    <div class="logo-icon">⚡</div>
+    <h1>XAUUSD CALC</h1>
+  </div>
+  <div class="sub">Prop Firm Challenge · Gold Edition</div>
+</header>
 
-  <!-- Account Banner -->
-  <div class="account-banner">
-    <div class="account-stat">
-      <div class="val" id="bannerBalance">$5,000</div>
-      <div class="lbl">Account</div>
-    </div>
-    <div class="divider"></div>
-    <div class="account-stat">
-      <div class="val" id="bannerRisk">$25.00</div>
-      <div class="lbl">Risk / Trade</div>
-    </div>
-    <div class="divider"></div>
-    <div class="account-stat">
-      <div class="val" id="bannerDD">$250</div>
-      <div class="lbl">Daily DD Limit</div>
-    </div>
-    <div class="divider"></div>
-    <div class="account-stat">
-      <div class="val" id="bannerDrawdown">$500</div>
-      <div class="lbl">Max Drawdown</div>
-    </div>
+<!-- ── CHALLENGE TRACKER ── -->
+<div class="challenge-panel">
+  <div class="cp-title">
+    <span>⬡ Challenge Tracker</span>
+    <span class="badge-firm" id="firmLabel">5K CHALLENGE</span>
   </div>
 
-  <!-- Account Settings Card -->
-  <div class="card">
-    <div class="card-title"><span>⚙</span> Account Settings</div>
-    <div class="account-row">
-      <div class="input-group">
-        <label>Account Size <span class="req">*</span></label>
-        <div class="input-wrap">
-          <span class="prefix">$</span>
-          <input type="number" id="accountSize" value="5000" min="100" step="100" placeholder="5000">
-        </div>
+  <div class="input-grid" style="margin-bottom:10px">
+    <div class="ig">
+      <label>Starting Balance <span class="req">*</span></label>
+      <div class="inp-wrap"><span class="pfx">$</span>
+        <input type="number" id="startBal" value="5000" min="100" step="100">
       </div>
+    </div>
+    <div class="ig">
+      <label>Current Balance</label>
+      <div class="inp-wrap"><span class="pfx">$</span>
+        <input type="number" id="currentBal" value="5000" min="0" step="0.01">
+      </div>
+    </div>
+    <div class="ig">
+      <label>Today's Start Bal</label>
+      <div class="inp-wrap"><span class="pfx">$</span>
+        <input type="number" id="dayStartBal" value="5000" min="0" step="0.01">
+      </div>
+    </div>
+    <div class="ig">
+      <label>Account Preset</label>
       <div class="preset-btns">
-        <button class="preset-btn active" onclick="setAccount(5000, this)">5K</button>
-        <button class="preset-btn" onclick="setAccount(10000, this)">10K</button>
-        <button class="preset-btn" onclick="setAccount(25000, this)">25K</button>
-        <button class="preset-btn" onclick="setAccount(50000, this)">50K</button>
+        <button class="pbtn active" onclick="setAccount(5000,this)">5K</button>
+        <button class="pbtn" onclick="setAccount(10000,this)">10K</button>
+        <button class="pbtn" onclick="setAccount(25000,this)">25K</button>
+        <button class="pbtn" onclick="setAccount(50000,this)">50K</button>
       </div>
     </div>
-    <div class="risk-row" style="margin-top:12px">
+  </div>
+
+  <div class="cp-grid">
+    <div class="cp-stat">
+      <div class="csv" id="statPnl" style="color:var(--green)">$0.00</div>
+      <div class="csl">Total P&amp;L</div>
+      <div class="css2" id="statPnlPct">0.00%</div>
+    </div>
+    <div class="cp-stat">
+      <div class="csv" id="statDailyUsed" style="color:var(--amber)">$0.00</div>
+      <div class="csl">Daily Loss Used</div>
+      <div class="css2" id="statDailyLeft">$200 left</div>
+    </div>
+    <div class="cp-stat">
+      <div class="csv" id="statTradesNeeded" style="color:var(--blue)">~8 wins</div>
+      <div class="csl">Wins to Target</div>
+      <div class="css2" id="statTargetLeft">$400 to go</div>
+    </div>
+  </div>
+
+  <div>
+    <div class="prog-row">
+      <div class="prog-label">
+        <span class="pl-name">Profit Target (8%)</span>
+        <span class="pl-val" id="profitProgLabel" style="color:var(--green)">0.00% / 8%</span>
+      </div>
+      <div class="prog-track"><div class="prog-fill pf-profit" id="profitProgBar" style="width:0%"></div></div>
+    </div>
+    <div class="prog-row" style="margin-top:7px">
+      <div class="prog-label">
+        <span class="pl-name">Daily Loss Limit (4%)</span>
+        <span class="pl-val" id="dailyProgLabel" style="color:var(--amber)">0.00% / 4%</span>
+      </div>
+      <div class="prog-track"><div class="prog-fill pf-daily" id="dailyProgBar" style="width:0%"></div></div>
+    </div>
+    <div class="prog-row" style="margin-top:7px">
+      <div class="prog-label">
+        <span class="pl-name">Max Drawdown (8%)</span>
+        <span class="pl-val" id="totalProgLabel" style="color:var(--blue)">0.00% / 8%</span>
+      </div>
+      <div class="prog-track"><div class="prog-fill pf-total" id="totalProgBar" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+    <div class="cp-stat" style="text-align:left;flex:1;min-width:100px">
+      <div class="csv" id="limitDailyAmt" style="color:var(--amber)">$200</div>
+      <div class="csl">Max Daily Loss</div>
+      <div class="css2" id="limitDailyLeft">$200 remaining</div>
+    </div>
+    <div class="cp-stat" style="text-align:left;flex:1;min-width:100px">
+      <div class="csv" id="limitTotalAmt" style="color:var(--red)">$400</div>
+      <div class="csl">Max Total Loss</div>
+      <div class="css2" id="limitTotalLeft">$400 remaining</div>
+    </div>
+    <div class="cp-stat" style="text-align:left;flex:1;min-width:100px">
+      <div class="csv" id="limitTarget" style="color:var(--green)">$400</div>
+      <div class="csl">Profit Target</div>
+      <div class="css2" id="limitTargetLeft">$400 to go</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── RISK SETTINGS ── -->
+<div class="card">
+  <div class="card-title"><span class="ct-icon">⚙</span> Risk Settings</div>
+  <div class="risk-row">
+    <label>Risk %</label>
+    <input type="range" id="riskSlider" min="0.1" max="4" step="0.1" value="0.5" oninput="syncSlider()">
+    <div class="risk-val" id="riskSliderVal">0.5%</div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:9px">
+    <div class="ig" style="flex:1">
       <label>Risk %</label>
-      <input type="range" id="riskSlider" min="0.1" max="3" step="0.1" value="0.5" oninput="syncRiskSlider()">
-      <div class="risk-val" id="riskSliderVal">0.5%</div>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:8px">
-      <div class="input-group" style="flex:1">
-        <label>Risk %</label>
-        <div class="input-wrap">
-          <span class="prefix">%</span>
-          <input type="number" id="riskPct" value="0.5" min="0.1" max="5" step="0.1" placeholder="0.5">
-        </div>
+      <div class="inp-wrap"><span class="pfx">%</span>
+        <input type="number" id="riskPct" value="0.5" min="0.1" max="10" step="0.1">
       </div>
-      <div class="input-group" style="flex:1">
-        <label>Risk $ Amount</label>
-        <div class="input-wrap">
-          <span class="prefix">$</span>
-          <input type="number" id="riskAmt" value="25" min="1" step="0.5" placeholder="25">
-        </div>
+    </div>
+    <div class="ig" style="flex:1">
+      <label>Risk $ Amount</label>
+      <div class="inp-wrap"><span class="pfx">$</span>
+        <input type="number" id="riskAmt" value="25" min="0.5" step="0.5">
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Trade Inputs Card -->
-  <div class="card">
-    <div class="card-title"><span>📊</span> Trade Setup</div>
-    <div class="input-grid">
-      <div class="input-group">
-        <label>Entry Price <span class="req">*</span></label>
-        <div class="input-wrap">
-          <span class="prefix">$</span>
-          <input type="number" id="entryPrice" placeholder="3310.50" step="0.01">
-        </div>
-      </div>
-      <div class="input-group">
-        <label>Lot Size <span style="color:var(--text-muted)">(opt)</span></label>
-        <div class="input-wrap">
-          <span class="prefix">⬡</span>
-          <input type="number" id="lotSize" placeholder="Auto" step="0.01" min="0.01">
-        </div>
-        <div class="input-hint">Leave blank = auto-calc</div>
-      </div>
-      <div class="input-group">
-        <label>Stop Loss <span class="req">*</span></label>
-        <div class="input-wrap">
-          <span class="prefix">$</span>
-          <input type="number" id="stopLoss" placeholder="3305.00" step="0.01">
-        </div>
-      </div>
-      <div class="input-group">
-        <label>Take Profit <span class="req">*</span></label>
-        <div class="input-wrap">
-          <span class="prefix">$</span>
-          <input type="number" id="takeProfit" placeholder="3325.00" step="0.01">
-        </div>
+<!-- ── TRADE SETUP ── -->
+<div class="card">
+  <div class="card-title"><span class="ct-icon">📊</span> Trade Setup</div>
+  <div class="input-grid">
+    <div class="ig">
+      <label>Entry Price <span class="req">*</span></label>
+      <div class="inp-wrap"><span class="pfx">$</span>
+        <input type="number" id="entryPrice" placeholder="3310.50" step="0.01">
       </div>
     </div>
-    <div class="btn-row">
-      <button class="btn btn-gold" onclick="calculate()">⚡ Calculate</button>
-      <button class="btn btn-green" id="safeLotBtn" onclick="useSafeLot()">🛡 Safe Lot</button>
-      <button class="btn btn-red" onclick="resetAll()">✕ Reset</button>
+    <div class="ig">
+      <label>Lot Size <span style="color:var(--muted)">(opt)</span></label>
+      <div class="inp-wrap"><span class="pfx">⬡</span>
+        <input type="number" id="lotSize" placeholder="Auto" step="0.01" min="0.01">
+      </div>
+      <div class="inp-hint">Leave blank = auto-calc</div>
     </div>
-  </div>
-
-  <!-- Results Card -->
-  <div class="card" id="resultsCard">
-    <div class="trade-type-row">
-      <div id="tradeBadge" class="none">— WAITING —</div>
-      <div id="statusBadge" class="idle">● IDLE</div>
-    </div>
-
-    <div class="results-grid" id="resultsGrid">
-      <div class="result-box" id="rb-loss">
-        <div class="r-label">💸 Max Loss</div>
-        <div class="r-value" id="lossUSD">—</div>
-        <div class="r-sub" id="lossSub">—</div>
-      </div>
-      <div class="result-box" id="rb-profit">
-        <div class="r-label">💰 Max Profit</div>
-        <div class="r-value" id="profitUSD">—</div>
-        <div class="r-sub" id="profitSub">—</div>
-      </div>
-      <div class="result-box" id="rb-lot">
-        <div class="r-label">📦 Auto Lot (0.5%)</div>
-        <div class="r-value" id="autoLot">—</div>
-        <div class="r-sub" id="autoLotSub">—</div>
-      </div>
-      <div class="result-box" id="rb-safe">
-        <div class="r-label">🛡 Safe Lot Cap</div>
-        <div class="r-value" id="safeLot">—</div>
-        <div class="r-sub">Max 0.15 lots</div>
-      </div>
-      <div class="result-box" id="rb-risk">
-        <div class="r-label">⚠ Risk Used</div>
-        <div class="r-value" id="riskUsed">—</div>
-        <div class="r-sub" id="riskUsedSub">—</div>
-      </div>
-      <div class="result-box" id="rb-rr">
-        <div class="r-label">📐 R:R Ratio</div>
-        <div class="r-value" id="rrRatio">—</div>
-        <div class="r-sub" id="rrSub">—</div>
+    <div class="ig">
+      <label>Stop Loss <span class="req">*</span></label>
+      <div class="inp-wrap"><span class="pfx">$</span>
+        <input type="number" id="stopLoss" placeholder="3305.00" step="0.01">
       </div>
     </div>
-
-    <!-- Points info -->
-    <div class="points-row">
-      <div class="point-box">
-        <div class="pb-val" id="slPoints">—</div>
-        <div class="pb-lbl">SL Points</div>
-      </div>
-      <div class="point-box">
-        <div class="pb-val" id="tpPoints">—</div>
-        <div class="pb-lbl">TP Points</div>
-      </div>
-      <div class="point-box">
-        <div class="pb-val" id="slPips">—</div>
-        <div class="pb-lbl">SL Pips</div>
-      </div>
-      <div class="point-box">
-        <div class="pb-val" id="tpPips">—</div>
-        <div class="pb-lbl">TP Pips</div>
-      </div>
-    </div>
-
-    <!-- RR Bar -->
-    <div class="rr-section">
-      <div class="rr-bar-wrap">
-        <div class="rr-bar-title">
-          Risk vs Reward Visualization
-          <span id="rrBarLabel">—</span>
-        </div>
-        <div class="rr-visual">
-          <div class="rr-risk-bar" id="rrRiskBar" style="width:50%"></div>
-          <div class="rr-reward-bar" id="rrRewardBar"></div>
-        </div>
-        <div class="rr-labels">
-          <span id="rrRiskLabel">RISK</span>
-          <span id="rrRewardLabel">REWARD</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Warnings -->
-    <div id="warningsBox"></div>
-  </div>
-
-  <!-- Pip Guide (collapsible) -->
-  <div class="card">
-    <button class="collapse-btn" onclick="toggleCollapse('pipGuide', this)">
-      <span>⬡ XAUUSD Pip Reference</span>
-      <span class="arrow">▼</span>
-    </button>
-    <div class="collapsible" id="pipGuide" style="max-height:0">
-      <div class="pip-guide" style="margin-top:12px">
-        <div><span class="ph">0.01 lot</span> <span class="pl">= $1.00 / point · $0.10 / pip</span></div>
-        <div><span class="ph">0.05 lot</span> <span class="pl">= $5.00 / point · $0.50 / pip</span></div>
-        <div><span class="ph">0.10 lot</span> <span class="pl">= $10.00 / point · $1.00 / pip</span></div>
-        <div><span class="ph">0.15 lot</span> <span class="pl">= $15.00 / point · $1.50 / pip (SAFE CAP)</span></div>
-        <div><span class="ph">0.20 lot</span> <span class="pl">= $20.00 / point · $2.00 / pip (AGGRESSIVE)</span></div>
-        <div><span class="ph">0.50 lot</span> <span class="pl">= $50.00 / point · $5.00 / pip (VERY HIGH)</span></div>
-        <div style="margin-top:6px"><span class="ph">1 point</span> <span class="pl">= $0.01 price move · 1 pip = $0.10 price move</span></div>
-        <div><span class="ph">Formula</span> <span class="pl">Lot = Risk$ ÷ (SL distance × 100)</span></div>
+    <div class="ig">
+      <label>Take Profit <span class="req">*</span></label>
+      <div class="inp-wrap"><span class="pfx">$</span>
+        <input type="number" id="takeProfit" placeholder="3325.00" step="0.01">
       </div>
     </div>
   </div>
+  <div class="btn-row">
+    <button class="btn btn-gold" onclick="calculate()">⚡ Calculate</button>
+    <button class="btn btn-green" onclick="useSafeLot()">🛡 Safe Lot</button>
+    <button class="btn btn-red" onclick="resetAll()">✕ Reset</button>
+  </div>
+</div>
 
-  <!-- Trade Log -->
-  <div class="card log-section">
-    <button class="collapse-btn open" onclick="toggleCollapse('tradeLog', this)">
-      <span>📋 Session Trade Log</span>
-      <span class="arrow" style="transform:rotate(180deg)">▼</span>
-    </button>
-    <div class="collapsible" id="tradeLog" style="max-height:2000px">
-      <div style="margin-top:12px">
-        <div class="log-stats">
-          <div class="log-stat">
-            <div class="ls-val" id="logCount" style="color:var(--gold)">0</div>
-            <div class="ls-lbl">Trades</div>
-          </div>
-          <div class="log-stat">
-            <div class="ls-val" id="logAvgRR" style="color:var(--blue)">—</div>
-            <div class="ls-lbl">Avg R:R</div>
-          </div>
-          <div class="log-stat">
-            <div class="ls-val" id="logTotalRisk" style="color:var(--amber)">$0</div>
-            <div class="ls-lbl">Total Risk</div>
-          </div>
-          <div class="log-stat">
-            <div class="ls-val" id="logAvgLot" style="color:var(--green)">—</div>
-            <div class="ls-lbl">Avg Lot</div>
-          </div>
-        </div>
-        <div class="log-list" id="logList">
-          <div class="log-empty" id="logEmpty">No trades logged yet. Calculate a trade to add it.</div>
-        </div>
-        <div class="btn-row">
-          <button class="btn btn-gold" onclick="addToLog()">+ Add to Log</button>
-          <button class="btn btn-outline" onclick="clearLog()">Clear Log</button>
-        </div>
-      </div>
+<!-- ── AI ADVISOR ── -->
+<div class="advisor-panel">
+  <div class="advisor-title">
+    <span class="ai-dot"></span>
+    <span>AI Lot Advisor — Pass This Challenge</span>
+  </div>
+  <div class="adv-lot-grid">
+    <div class="adv-lot" id="adv-cons" onclick="applyLot('cons')">
+      <div class="al-name">Conservative</div>
+      <div class="al-val" id="advVal-cons">—</div>
+      <div class="al-sub" id="advSub-cons">—</div>
+      <div class="al-badge" style="background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,.3)">SAFE</div>
+    </div>
+    <div class="adv-lot recommended" id="adv-opt" onclick="applyLot('opt')">
+      <div class="al-name">✦ Optimal</div>
+      <div class="al-val" id="advVal-opt">—</div>
+      <div class="al-sub" id="advSub-opt">—</div>
+      <div class="al-badge" style="background:var(--gold-dim);color:var(--gold);border:1px solid rgba(240,180,41,.3)">RECOMMENDED</div>
+    </div>
+    <div class="adv-lot" id="adv-agg" onclick="applyLot('agg')">
+      <div class="al-name">Aggressive</div>
+      <div class="al-val" id="advVal-agg">—</div>
+      <div class="al-sub" id="advSub-agg">—</div>
+      <div class="al-badge" style="background:var(--amber-dim);color:var(--amber);border:1px solid rgba(245,158,11,.3)">CAUTION</div>
+    </div>
+  </div>
+  <div class="adv-tip" id="advTip">💡 Enter your trade details above to get intelligent lot size recommendations tailored to your challenge progress.</div>
+</div>
+
+<!-- ── RESULTS ── -->
+<div class="card">
+  <div class="badge-row">
+    <div id="tradeBadge" class="none">— WAITING —</div>
+    <div id="statusBadge" class="idle">● IDLE</div>
+  </div>
+  <div class="results-grid">
+    <div class="rbox" id="rb-loss">
+      <div class="rl">💸 Max Loss</div>
+      <div class="rv" id="lossUSD">—</div>
+      <div class="rs" id="lossSub">—</div>
+    </div>
+    <div class="rbox" id="rb-profit">
+      <div class="rl">💰 Max Profit</div>
+      <div class="rv" id="profitUSD">—</div>
+      <div class="rs" id="profitSub">—</div>
+    </div>
+    <div class="rbox" id="rb-lot">
+      <div class="rl">📦 Auto Lot</div>
+      <div class="rv" id="autoLot">—</div>
+      <div class="rs" id="autoLotSub">—</div>
+    </div>
+    <div class="rbox" id="rb-safe">
+      <div class="rl">🛡 Safe Cap Lot</div>
+      <div class="rv" id="safeLot">—</div>
+      <div class="rs">Max 0.15 lots</div>
+    </div>
+    <div class="rbox" id="rb-risk">
+      <div class="rl">⚠ Risk Used</div>
+      <div class="rv" id="riskUsed">—</div>
+      <div class="rs" id="riskUsedSub">—</div>
+    </div>
+    <div class="rbox" id="rb-rr">
+      <div class="rl">📐 R:R Ratio</div>
+      <div class="rv" id="rrRatio">—</div>
+      <div class="rs" id="rrSub">—</div>
     </div>
   </div>
 
-</div><!-- /wrapper -->
+  <div class="pts-row">
+    <div class="pbox"><div class="pv" id="slPoints">—</div><div class="pl">SL Points</div></div>
+    <div class="pbox"><div class="pv" id="tpPoints">—</div><div class="pl">TP Points</div></div>
+    <div class="pbox"><div class="pv" id="slPips">—</div><div class="pl">SL Pips</div></div>
+    <div class="pbox"><div class="pv" id="tpPips">—</div><div class="pl">TP Pips</div></div>
+  </div>
 
+  <div class="rr-wrap">
+    <div class="rr-head">
+      <span class="rh-l">Risk vs Reward</span>
+      <span class="rh-r" id="rrBarLabel">—</span>
+    </div>
+    <div class="rr-bar">
+      <div class="rr-risk" id="rrRiskBar" style="width:50%"></div>
+      <div class="rr-reward"></div>
+    </div>
+    <div class="rr-foot">
+      <span id="rrRiskLabel">RISK</span>
+      <span id="rrRewardLabel">REWARD</span>
+    </div>
+  </div>
+
+  <div class="rr-wrap" style="margin-top:9px">
+    <div class="rr-head">
+      <span class="rh-l">Challenge Safety Meter</span>
+      <span class="rh-r" id="safetyScore">—</span>
+    </div>
+    <div class="rr-bar" style="height:10px">
+      <div class="rr-risk" id="dangerBar" style="width:0%"></div>
+      <div class="rr-reward" style="background:var(--border2)"></div>
+    </div>
+    <div class="rr-foot"><span>SAFE</span><span>DANGER ZONE</span></div>
+  </div>
+
+  <div id="warningsBox"></div>
+</div>
+
+<!-- ── PIP GUIDE ── -->
+<div class="card">
+  <button class="col-btn" onclick="toggleCol('pipGuide',this)">
+    <span>⬡ XAUUSD Reference & Prop Rules</span><span class="arr">▼</span>
+  </button>
+  <div class="collapsible" id="pipGuide" style="max-height:0">
+    <div class="pip-guide">
+      <div><span class="ph">0.01 lot</span> <span class="pv2">= $1.00/point · $0.10/pip</span></div>
+      <div><span class="ph">0.05 lot</span> <span class="pv2">= $5.00/point · $0.50/pip</span></div>
+      <div><span class="ph">0.10 lot</span> <span class="pv2">= $10.00/point · $1.00/pip</span></div>
+      <div><span class="ph">0.15 lot</span> <span class="pv2">= $15.00/point (SAFE CAP)</span></div>
+      <div><span class="ph">Formula</span> <span class="pv2">Lot = Risk$ ÷ (SL_dist × 100)</span></div>
+      <div style="margin-top:6px;border-top:1px solid var(--border2);padding-top:6px">
+        <div><span class="ph">Daily Loss</span> <span class="pv2">Max 4% of starting balance</span></div>
+        <div><span class="ph">Max Loss</span>  <span class="pv2">Max 8% of starting balance (total)</span></div>
+        <div><span class="ph">Target</span>    <span class="pv2">+8% profit without violating rules</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TRADE LOG ── -->
+<div class="card">
+  <button class="col-btn open" onclick="toggleCol('tradeLog',this)">
+    <span>📋 Session Trade Log</span><span class="arr" style="transform:rotate(180deg)">▼</span>
+  </button>
+  <div class="collapsible" id="tradeLog" style="max-height:2000px">
+    <div style="margin-top:12px">
+      <div class="log-stats">
+        <div class="lstat"><div class="lsv" id="logCount" style="color:var(--gold)">0</div><div class="lsl">Trades</div></div>
+        <div class="lstat"><div class="lsv" id="logAvgRR" style="color:var(--blue)">—</div><div class="lsl">Avg R:R</div></div>
+        <div class="lstat"><div class="lsv" id="logTotalRisk" style="color:var(--amber)">$0</div><div class="lsl">Total Risk</div></div>
+        <div class="lstat"><div class="lsv" id="logAvgLot" style="color:var(--green)">—</div><div class="lsl">Avg Lot</div></div>
+      </div>
+      <div class="log-list" id="logList">
+        <div class="log-empty">No trades logged yet.</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-gold" onclick="addToLog()">+ Add to Log</button>
+        <button class="btn btn-outline" onclick="clearLog()">Clear Log</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
 <script>
-// ── State ──
-let currentCalc = null;
-let tradeLog = [];
-let logCounter = 0;
-
-// ── Input references ──
 const $ = id => document.getElementById(id);
+let currentCalc = null, tradeLog = [], logCounter = 0;
+const RULES = { dailyLossPct:4, maxLossPct:8, targetPct:8 };
+window._advLots = {};
 
-// ── Account preset ──
+const getStartBal    = () => parseFloat($('startBal').value)    || 5000;
+const getCurrentBal  = () => parseFloat($('currentBal').value)  || getStartBal();
+const getDayStartBal = () => parseFloat($('dayStartBal').value) || getCurrentBal();
+const getRiskPct     = () => parseFloat($('riskPct').value)     || 0.5;
+const getRiskAmt     = () => parseFloat($('riskAmt').value)     || 25;
+const fmt            = n  => parseFloat(n).toFixed(2);
+
 function setAccount(val, btn) {
-  $('accountSize').value = val;
-  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  $('startBal').value    = val;
+  $('currentBal').value  = val;
+  $('dayStartBal').value = val;
+  document.querySelectorAll('.pbtn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   syncRiskFromPct();
-  calculate();
+  updateChallenge();
 }
 
-// ── Risk sync ──
-function syncRiskSlider() {
+function syncSlider() {
   const v = parseFloat($('riskSlider').value);
   $('riskSliderVal').textContent = v.toFixed(1) + '%';
   $('riskPct').value = v;
@@ -783,340 +534,383 @@ function syncRiskSlider() {
 }
 
 function syncRiskFromPct() {
-  const acc = parseFloat($('accountSize').value) || 5000;
-  const pct = parseFloat($('riskPct').value) || 0.5;
+  const acc = getStartBal(), pct = getRiskPct();
   $('riskAmt').value = (acc * pct / 100).toFixed(2);
-  $('riskSlider').value = pct;
-  $('riskSliderVal').textContent = pct.toFixed(1) + '%';
-  updateBanner();
+  $('riskSlider').value = Math.min(pct, 4);
+  $('riskSliderVal').textContent = Math.min(pct, 4).toFixed(1) + '%';
   calculate();
 }
 
 function syncRiskFromAmt() {
-  const acc = parseFloat($('accountSize').value) || 5000;
-  const amt = parseFloat($('riskAmt').value) || 25;
+  const acc = getStartBal(), amt = parseFloat($('riskAmt').value) || 0;
   const pct = (amt / acc) * 100;
-  $('riskPct').value = pct.toFixed(2);
-  $('riskSlider').value = Math.min(pct, 3);
-  $('riskSliderVal').textContent = Math.min(pct, 3).toFixed(1) + '%';
-  updateBanner();
+  $('riskPct').value = pct.toFixed(3);
+  $('riskSlider').value = Math.min(pct, 4);
+  $('riskSliderVal').textContent = Math.min(pct, 4).toFixed(1) + '%';
   calculate();
 }
 
-function updateBanner() {
-  const acc = parseFloat($('accountSize').value) || 5000;
-  const riskAmt = parseFloat($('riskAmt').value) || 25;
-  $('bannerBalance').textContent = '$' + acc.toLocaleString();
-  $('bannerRisk').textContent = '$' + riskAmt.toFixed(2);
-  $('bannerDD').textContent = '$' + (acc * 0.05).toFixed(0);
-  $('bannerDrawdown').textContent = '$' + (acc * 0.10).toFixed(0);
+function updateChallenge() {
+  const start    = getStartBal();
+  const current  = getCurrentBal();
+  const dayStart = getDayStartBal();
+
+  const dailyLossLimit = start * RULES.dailyLossPct / 100;
+  const maxLossLimit   = start * RULES.maxLossPct   / 100;
+  const profitTarget   = start * RULES.targetPct    / 100;
+
+  const totalPnl     = current - start;
+  const totalPnlPct  = (totalPnl / start) * 100;
+  const dailyLoss    = Math.max(0, dayStart - current);
+  const dailyLossPct = (dailyLoss / start) * 100;
+  const totalLoss    = Math.max(0, start - current);
+  const totalLossPct = (totalLoss / start) * 100;
+  const profitPct    = Math.max(0, totalPnlPct);
+
+  const accountLabels = { 5000:'5K CHALLENGE', 10000:'10K CHALLENGE', 25000:'25K CHALLENGE', 50000:'50K CHALLENGE' };
+  $('firmLabel').textContent = accountLabels[start] || (start >= 50000 ? '50K CHALLENGE' : start >= 25000 ? '25K CHALLENGE' : start >= 10000 ? '10K CHALLENGE' : '5K CHALLENGE');
+
+  $('statPnl').textContent     = (totalPnl >= 0 ? '+$' : '-$') + Math.abs(totalPnl).toFixed(2);
+  $('statPnl').style.color     = totalPnl >= 0 ? 'var(--green)' : 'var(--red)';
+  $('statPnlPct').textContent  = (totalPnlPct >= 0 ? '+' : '') + totalPnlPct.toFixed(2) + '%';
+  $('statDailyUsed').textContent = '-$' + dailyLoss.toFixed(2);
+  $('statDailyLeft').textContent = '$' + Math.max(0, dailyLossLimit - dailyLoss).toFixed(2) + ' left';
+
+  const riskPerTrade = getRiskAmt();
+  const remaining    = Math.max(0, profitTarget - Math.max(0, totalPnl));
+  if (remaining <= 0) {
+    $('statTradesNeeded').textContent = '✓ DONE'; $('statTradesNeeded').style.color = 'var(--green)';
+    $('statTargetLeft').textContent = 'Target reached!';
+  } else {
+    const avgWin = riskPerTrade * 2;
+    $('statTradesNeeded').textContent = '~' + Math.ceil(remaining / avgWin) + ' wins';
+    $('statTradesNeeded').style.color = 'var(--blue)';
+    $('statTargetLeft').textContent = '$' + remaining.toFixed(2) + ' to go';
+  }
+
+  $('profitProgBar').style.width    = Math.min((profitPct / RULES.targetPct) * 100, 100) + '%';
+  $('profitProgLabel').textContent  = profitPct.toFixed(2) + '% / 8%';
+  $('profitProgLabel').style.color  = profitPct >= 8 ? 'var(--gold)' : 'var(--green)';
+
+  const df = Math.min((dailyLossPct / RULES.dailyLossPct) * 100, 100);
+  $('dailyProgBar').style.width   = df + '%';
+  $('dailyProgLabel').textContent = dailyLossPct.toFixed(2) + '% / 4%';
+  $('dailyProgLabel').style.color = df > 75 ? 'var(--red)' : 'var(--amber)';
+
+  const tf = Math.min((totalLossPct / RULES.maxLossPct) * 100, 100);
+  $('totalProgBar').style.width   = tf + '%';
+  $('totalProgLabel').textContent = totalLossPct.toFixed(2) + '% / 8%';
+  $('totalProgLabel').style.color = tf > 75 ? 'var(--red)' : 'var(--blue)';
+
+  $('limitDailyAmt').textContent   = '$' + dailyLossLimit.toFixed(0);
+  $('limitDailyLeft').textContent  = '$' + Math.max(0, dailyLossLimit - dailyLoss).toFixed(2) + ' remaining';
+  $('limitTotalAmt').textContent   = '$' + maxLossLimit.toFixed(0);
+  $('limitTotalLeft').textContent  = '$' + Math.max(0, maxLossLimit - totalLoss).toFixed(2) + ' remaining';
+  $('limitTarget').textContent     = '$' + profitTarget.toFixed(0);
+  $('limitTargetLeft').textContent = '$' + remaining.toFixed(2) + ' to go';
+
+  calculate();
 }
 
-// ── Main calculation ──
 function calculate() {
-  const entry = parseFloat($('entryPrice').value);
-  const sl    = parseFloat($('stopLoss').value);
-  const tp    = parseFloat($('takeProfit').value);
+  const entry     = parseFloat($('entryPrice').value);
+  const sl        = parseFloat($('stopLoss').value);
+  const tp        = parseFloat($('takeProfit').value);
   const manualLot = parseFloat($('lotSize').value);
-  const acc   = parseFloat($('accountSize').value) || 5000;
-  const riskAmt = parseFloat($('riskAmt').value) || 25;
-  const riskPct = parseFloat($('riskPct').value) || 0.5;
+  const start     = getStartBal();
+  const current   = getCurrentBal();
+  const dayStart  = getDayStartBal();
+  const riskAmt   = getRiskAmt();
 
-  updateBanner();
+  if (!entry || !sl || !tp || isNaN(entry) || isNaN(sl) || isNaN(tp) || sl === entry || tp === entry) return;
 
-  if (!entry || !sl || !tp) return;
-  if (isNaN(entry) || isNaN(sl) || isNaN(tp)) return;
-  if (sl === entry || tp === entry) return;
-
-  // Trade direction
-  const isBuy = tp > entry;
+  const isBuy     = tp > entry;
   const tradeType = isBuy ? 'BUY' : 'SELL';
-
-  // Validate SL direction
-  const slValid = isBuy ? sl < entry : sl > entry;
-
-  // Distances in price points
-  const slDist = Math.abs(entry - sl);
-  const tpDist = Math.abs(entry - tp);
-
+  const slValid   = isBuy ? sl < entry : sl > entry;
+  const slDist    = Math.abs(entry - sl);
+  const tpDist    = Math.abs(entry - tp);
   if (slDist === 0) return;
 
-  // XAUUSD: 0.01 lot = $1 per 1 point
-  // So lot value per point = lot * 100
-  // loss = lot * slDist * 100
-  // To hit target risk: lot = riskAmt / (slDist * 100)
-
+  // XAUUSD: 0.01 lot = $1/point → lot = riskAmt / (slDist * 100)
   const autoLotRaw = riskAmt / (slDist * 100);
   const autoLot    = Math.max(0.01, parseFloat(autoLotRaw.toFixed(2)));
   const safeLotVal = Math.min(autoLot, 0.15);
+  const usedLot    = (!isNaN(manualLot) && manualLot > 0) ? manualLot : autoLot;
 
-  // Use manual lot if provided, else auto
-  const usedLot = (!isNaN(manualLot) && manualLot > 0) ? manualLot : autoLot;
+  const lossUSD     = usedLot * slDist * 100;
+  const profitUSD   = usedLot * tpDist * 100;
+  const riskUsedPct = (lossUSD / start) * 100;
+  const rr          = tpDist / slDist;
+  const slPips      = (slDist * 10).toFixed(1);
+  const tpPips      = (tpDist * 10).toFixed(1);
 
-  // P&L
-  const lossUSD   = usedLot * slDist * 100;
-  const profitUSD = usedLot * tpDist * 100;
-
-  // Risk % used
-  const riskUsedPct = (lossUSD / acc) * 100;
-
-  // R:R
-  const rr = tpDist / slDist;
-
-  // Pips (XAUUSD: 1 pip = $0.10 → 10 points)
-  const slPips = (slDist * 10).toFixed(1);
-  const tpPips = (tpDist * 10).toFixed(1);
+  const dailyLossLimit  = start * RULES.dailyLossPct / 100;
+  const maxLossLimit    = start * RULES.maxLossPct   / 100;
+  const dailyLossUsed   = Math.max(0, dayStart - current);
+  const totalLossUsed   = Math.max(0, start - current);
+  const dailyRemaining  = Math.max(0, dailyLossLimit - dailyLossUsed);
+  const totalRemaining  = Math.max(0, maxLossLimit - totalLossUsed);
+  const maxSafeLotChallenge = Math.max(0.01, Math.min(dailyRemaining / (slDist * 100), totalRemaining / (slDist * 100), 0.20));
 
   currentCalc = {
-    tradeType, entry, sl, tp, slDist, tpDist,
-    autoLot, safeLotVal, usedLot,
-    lossUSD, profitUSD, riskUsedPct, rr,
-    slPips, tpPips, acc, riskAmt, slValid
+    tradeType, entry, sl, tp, slDist, tpDist, autoLot, safeLotVal, usedLot,
+    lossUSD, profitUSD, riskUsedPct, rr, slPips, tpPips,
+    start, current, dayStart, riskAmt,
+    dailyLossLimit, maxLossLimit, dailyLossUsed, totalLossUsed,
+    dailyRemaining, totalRemaining, maxSafeLotChallenge, slValid
   };
 
   renderResults(currentCalc);
+  renderAdvisor(currentCalc);
 }
 
 function renderResults(c) {
-  // Trade badge
   const badge = $('tradeBadge');
-  badge.className = c.tradeType === 'BUY' ? 'buy' : 'sell';
+  badge.className   = c.tradeType === 'BUY' ? 'buy' : 'sell';
   badge.textContent = (c.tradeType === 'BUY' ? '▲' : '▼') + ' ' + c.tradeType;
 
-  // Status badge
-  const statusBadge = $('statusBadge');
-  let status, statusClass;
-  if (c.riskUsedPct <= 0.5 && c.rr >= 2) {
-    status = '✓ SAFE TRADE'; statusClass = 'safe';
-  } else if (c.riskUsedPct <= 1.0 && c.rr >= 1.5) {
-    status = '◈ ACCEPTABLE'; statusClass = 'risky';
+  const sb = $('statusBadge');
+  let status, scls;
+  if (c.lossUSD > c.dailyRemaining || c.riskUsedPct > 3) {
+    status = '✕ CHALLENGE RISK'; scls = 'danger';
+  } else if (c.riskUsedPct <= 0.5 && c.rr >= 2) {
+    status = '✓ SAFE TRADE'; scls = 'safe';
+  } else if (c.riskUsedPct <= 1.5 && c.rr >= 1.5) {
+    status = '◈ ACCEPTABLE'; scls = 'ok';
   } else {
-    status = '✕ HIGH RISK'; statusClass = 'danger';
+    status = '⚠ HIGH RISK'; scls = 'danger';
   }
-  statusBadge.textContent = status;
-  statusBadge.className = statusClass;
+  sb.textContent = status; sb.className = scls;
 
-  // Loss
-  $('lossUSD').textContent = '-$' + c.lossUSD.toFixed(2);
-  $('lossSub').textContent = c.slDist.toFixed(2) + ' pts · ' + c.slPips + ' pips SL';
-  const rbLoss = $('rb-loss');
-  rbLoss.className = 'result-box ' + (c.lossUSD > 200 ? 'red' : c.lossUSD > 100 ? '' : 'green');
+  $('lossUSD').textContent  = '-$' + fmt(c.lossUSD);
+  $('lossSub').textContent  = c.slDist.toFixed(2) + ' pts · ' + c.slPips + ' pips';
+  $('rb-loss').className    = 'rbox ' + (c.lossUSD > c.dailyRemaining ? 'r' : c.lossUSD > c.dailyLossLimit * 0.5 ? 'am' : 'g');
 
-  // Profit
-  $('profitUSD').textContent = '+$' + c.profitUSD.toFixed(2);
-  $('profitSub').textContent = c.tpDist.toFixed(2) + ' pts · ' + c.tpPips + ' pips TP';
-  $('rb-profit').className = 'result-box green';
+  $('profitUSD').textContent = '+$' + fmt(c.profitUSD);
+  $('profitSub').textContent = c.tpDist.toFixed(2) + ' pts · ' + c.tpPips + ' pips';
+  $('rb-profit').className   = 'rbox g';
 
-  // Auto lot
-  $('autoLot').textContent = c.autoLot.toFixed(2);
-  $('autoLotSub').textContent = 'For ' + c.riskAmt.toFixed(2) + '$ risk';
-  const rbLot = $('rb-lot');
-  rbLot.className = 'result-box ' + (c.autoLot > 0.2 ? 'red' : c.autoLot > 0.15 ? '' : 'highlight');
+  $('autoLot').textContent    = fmt(c.autoLot);
+  $('autoLotSub').textContent = 'For $' + fmt(c.riskAmt) + ' risk';
+  $('rb-lot').className       = 'rbox ' + (c.autoLot > 0.2 ? 'r' : c.autoLot > 0.15 ? 'am' : 'go');
 
-  // Safe lot
-  $('safeLot').textContent = c.safeLotVal.toFixed(2);
-  $('rb-safe').className = 'result-box ' + (c.safeLotVal <= 0.10 ? 'green' : 'highlight');
+  $('safeLot').textContent = fmt(c.safeLotVal);
+  $('rb-safe').className   = 'rbox ' + (c.safeLotVal <= 0.10 ? 'g' : 'go');
 
-  // Risk used
-  $('riskUsed').textContent = c.riskUsedPct.toFixed(2) + '%';
-  $('riskUsedSub').textContent = '$' + c.lossUSD.toFixed(2) + ' of $' + c.acc.toLocaleString();
-  const rbRisk = $('rb-risk');
-  rbRisk.className = 'result-box ' + (c.riskUsedPct > 1 ? 'red' : c.riskUsedPct > 0.5 ? '' : 'green');
+  $('riskUsed').textContent    = fmt(c.riskUsedPct) + '%';
+  $('riskUsedSub').textContent = '$' + fmt(c.lossUSD) + ' of $' + c.start.toLocaleString();
+  $('rb-risk').className       = 'rbox ' + (c.riskUsedPct > 2 ? 'r' : c.riskUsedPct > 1 ? 'am' : 'g');
 
-  // R:R
-  $('rrRatio').textContent = '1 : ' + c.rr.toFixed(2);
-  $('rrSub').textContent = c.rr >= 3 ? 'Excellent' : c.rr >= 2 ? 'Good' : c.rr >= 1.5 ? 'Acceptable' : 'Low';
-  const rbRR = $('rb-rr');
-  rbRR.className = 'result-box ' + (c.rr >= 2 ? 'green' : c.rr >= 1.5 ? 'blue' : '');
+  $('rrRatio').textContent = '1 : ' + fmt(c.rr);
+  $('rrSub').textContent   = c.rr >= 3 ? 'Excellent' : c.rr >= 2 ? 'Good' : c.rr >= 1.5 ? 'Acceptable' : 'Low R:R';
+  $('rb-rr').className     = 'rbox ' + (c.rr >= 2 ? 'g' : c.rr >= 1.5 ? 'b' : '');
 
-  // Points
   $('slPoints').textContent = c.slDist.toFixed(2);
   $('tpPoints').textContent = c.tpDist.toFixed(2);
-  $('slPips').textContent = c.slPips;
-  $('tpPips').textContent = c.tpPips;
+  $('slPips').textContent   = c.slPips;
+  $('tpPips').textContent   = c.tpPips;
 
-  // RR Bar
-  const total = c.slDist + c.tpDist;
-  const riskPct = (c.slDist / total) * 100;
-  $('rrRiskBar').style.width = riskPct + '%';
-  $('rrBarLabel').textContent = '1:' + c.rr.toFixed(2);
-  $('rrRiskLabel').textContent = 'RISK $' + c.lossUSD.toFixed(0);
+  const riskW = (c.slDist / (c.slDist + c.tpDist)) * 100;
+  $('rrRiskBar').style.width    = riskW + '%';
+  $('rrBarLabel').textContent   = '1:' + fmt(c.rr);
+  $('rrRiskLabel').textContent   = 'RISK $' + c.lossUSD.toFixed(0);
   $('rrRewardLabel').textContent = 'REWARD $' + c.profitUSD.toFixed(0);
 
-  // Warnings
+  const danger = Math.min(100,
+    (c.riskUsedPct / 4) * 35 +
+    (c.lossUSD / c.dailyLossLimit) * 35 +
+    (c.rr < 2 ? (2 - c.rr) * 15 : 0) +
+    (c.autoLot > 0.15 ? 15 : 0)
+  );
+  $('dangerBar').style.width      = danger.toFixed(0) + '%';
+  $('dangerBar').style.background = danger > 70 ? 'var(--red)' : danger > 40 ? 'var(--amber)' : 'var(--green)';
+  $('safetyScore').textContent    = danger < 30 ? '✓ SAFE' : danger < 60 ? '⚠ MODERATE' : '✕ DANGER';
+  $('safetyScore').style.color    = danger > 60 ? 'var(--red)' : danger > 30 ? 'var(--amber)' : 'var(--green)';
+
   buildWarnings(c);
 }
 
-function buildWarnings(c) {
-  const box = $('warningsBox');
-  const warnings = [];
+function renderAdvisor(c) {
+  const slDist      = c.slDist;
+  const start       = c.start;
+  const hardBudget  = Math.min(c.dailyRemaining, c.totalRemaining);
+  const profitDone  = Math.max(0, c.current - start);
+  const profitTarget= start * RULES.targetPct / 100;
+  const profitLeft  = Math.max(0.01, profitTarget - profitDone);
 
-  if (!c.slValid) {
-    warnings.push({ cls: 'warn-amber', icon: '⚠', msg: 'Stop loss direction looks incorrect for a ' + c.tradeType + ' trade. Check your SL price.' });
-  }
-  if (c.riskUsedPct > 2) {
-    warnings.push({ cls: '', icon: '🚨', msg: 'CRITICAL: Risk is ' + c.riskUsedPct.toFixed(2) + '% — this can blow a prop firm challenge in a single trade!' });
-  } else if (c.riskUsedPct > 1) {
-    warnings.push({ cls: '', icon: '⛔', msg: 'Risk exceeds 1% (' + c.riskUsedPct.toFixed(2) + '%). Most prop firms allow max 2% daily DD. Reduce lot size.' });
-  }
-  if (c.lossUSD > 200) {
-    warnings.push({ cls: '', icon: '🔴', msg: 'Loss of $' + c.lossUSD.toFixed(2) + ' exceeds the $200 daily drawdown safety limit for a $5K account.' });
-  }
-  if (c.autoLot > 0.2) {
-    warnings.push({ cls: 'warn-amber', icon: '⚠', msg: 'Auto lot (' + c.autoLot.toFixed(2) + ') is above 0.20 — aggressive for gold. Consider tightening your SL.' });
-  }
-  if (c.rr < 1.5) {
-    warnings.push({ cls: 'warn-amber', icon: '📉', msg: 'R:R is only ' + c.rr.toFixed(2) + ':1. Aim for at least 1.5:1 to maintain positive expectancy.' });
-  }
-  if (c.slDist < 2) {
-    warnings.push({ cls: 'warn-blue', icon: 'ℹ', msg: 'Very tight SL (' + c.slDist.toFixed(2) + ' pts). Gold can easily spike through tight stops — consider $3–$10+ SL distance.' });
-  }
-  if (c.riskUsedPct <= 0.5 && c.rr >= 2) {
-    warnings.push({ cls: 'warn-blue', icon: '✅', msg: 'Risk is ' + c.riskUsedPct.toFixed(2) + '% with ' + c.rr.toFixed(2) + ':1 R:R. This is within safe prop firm parameters.' });
-  }
+  // Conservative: 0.5% risk, max 0.10 lot, never exceed 40% of remaining daily budget
+  const consRisk = Math.min(start * 0.005, hardBudget * 0.4);
+  const consLot  = Math.max(0.01, Math.min(parseFloat((consRisk / (slDist * 100)).toFixed(2)), 0.10));
 
-  box.innerHTML = warnings.map(w =>
-    `<div class="warning-item ${w.cls}"><span class="warning-icon">${w.icon}</span><span>${w.msg}</span></div>`
-  ).join('');
+  // Optimal: 1% risk, calibrated so you need ~10 wins to reach target, never bust daily
+  const optRiskBase = Math.max(start * 0.008, profitLeft / (c.rr * 12));
+  const optRisk     = Math.min(optRiskBase, hardBudget * 0.55, start * 0.01);
+  const optLot      = Math.max(0.01, Math.min(parseFloat((optRisk / (slDist * 100)).toFixed(2)), 0.15));
+
+  // Aggressive: 1.5% risk, cap 0.20, never exceed 65% of remaining daily budget
+  const aggRisk = Math.min(start * 0.015, hardBudget * 0.65);
+  const aggLot  = Math.max(0.01, Math.min(parseFloat((aggRisk / (slDist * 100)).toFixed(2)), 0.20));
+
+  const consLoss = consLot * slDist * 100, consPnl = consLot * c.tpDist * 100;
+  const optLoss  = optLot  * slDist * 100, optPnl  = optLot  * c.tpDist * 100;
+  const aggLoss  = aggLot  * slDist * 100, aggPnl  = aggLot  * c.tpDist * 100;
+
+  $('advVal-cons').textContent = consLot.toFixed(2);
+  $('advSub-cons').textContent = '-$' + consLoss.toFixed(0) + ' / +$' + consPnl.toFixed(0);
+  $('advVal-opt').textContent  = optLot.toFixed(2);
+  $('advSub-opt').textContent  = '-$' + optLoss.toFixed(0) + ' / +$' + optPnl.toFixed(0);
+  $('advVal-agg').textContent  = aggLot.toFixed(2);
+  $('advSub-agg').textContent  = '-$' + aggLoss.toFixed(0) + ' / +$' + aggPnl.toFixed(0);
+
+  window._advLots = { cons: consLot, opt: optLot, agg: aggLot };
+
+  // Smart tip
+  const dailyUsedPct = (c.dailyLossUsed / start) * 100;
+  const totalUsedPct = (c.totalLossUsed  / start) * 100;
+  let tip = '';
+  if (c.dailyRemaining <= 0) {
+    tip = '🚨 Daily loss limit reached (4%). Stop trading for today to protect your challenge!';
+  } else if (c.totalRemaining <= 0) {
+    tip = '💀 Maximum drawdown (8%) reached. Challenge account is at risk. No more trades!';
+  } else if (profitTarget - profitDone <= 0) {
+    tip = '🏆 Profit target (8%) already reached! Lock in your profit — protect the account.';
+  } else if (c.rr < 1.5) {
+    tip = '📉 R:R of ' + fmt(c.rr) + ':1 is too low. Move TP further to get at least 2:1 before entering.';
+  } else if (dailyUsedPct > 2.5) {
+    tip = '⚠ Daily drawdown at ' + dailyUsedPct.toFixed(1) + '% (of 4% limit). Use CONSERVATIVE lot only — you are close to the daily cap.';
+  } else if (totalUsedPct > 5) {
+    tip = '🔴 Total drawdown at ' + totalUsedPct.toFixed(1) + '% (of 8% limit). Only $' + c.totalRemaining.toFixed(0) + ' buffer left. Minimum lots only.';
+  } else {
+    const winsNeeded = Math.ceil((profitTarget - profitDone) / (optPnl || 1));
+    tip = '✦ Optimal lot gives ~$' + optPnl.toFixed(0) + ' profit per winning trade. You need ~' + winsNeeded + ' more wins to hit the 8% target. Daily budget remaining: $' + c.dailyRemaining.toFixed(0) + '.';
+  }
+  $('advTip').innerHTML = tip;
 }
 
-// ── Use Safe Lot ──
-function useSafeLot() {
-  if (!currentCalc) return;
-  $('lotSize').value = currentCalc.safeLotVal.toFixed(2);
+function applyLot(type) {
+  if (!window._advLots || !window._advLots[type]) return;
+  $('lotSize').value = window._advLots[type].toFixed(2);
   calculate();
 }
 
-// ── Reset ──
-function resetAll() {
-  $('entryPrice').value = '';
-  $('stopLoss').value = '';
-  $('takeProfit').value = '';
-  $('lotSize').value = '';
-  currentCalc = null;
+function buildWarnings(c) {
+  const W = [];
+  const dailyUsedPct = (c.dailyLossUsed / c.start) * 100;
+  const totalUsedPct = (c.totalLossUsed  / c.start) * 100;
 
-  $('tradeBadge').className = 'none';
-  $('tradeBadge').textContent = '— WAITING —';
-  $('statusBadge').className = 'idle';
-  $('statusBadge').textContent = '● IDLE';
+  if (!c.slValid)
+    W.push({cls:'wam',icon:'⚠',msg:'SL direction is wrong for a ' + c.tradeType + '. Check your stop loss price.'});
 
-  ['lossUSD','profitUSD','autoLot','safeLot','riskUsed','rrRatio',
-   'lossSub','profitSub','autoLotSub','riskUsedSub','rrSub',
-   'slPoints','tpPoints','slPips','tpPips','rrBarLabel',
-   'rrRiskLabel','rrRewardLabel'].forEach(id => {
-    const el = $(id);
-    if (el) el.textContent = el.id === 'rrRiskLabel' ? 'RISK' : el.id === 'rrRewardLabel' ? 'REWARD' : '—';
-  });
+  if (c.lossUSD > c.dailyRemaining)
+    W.push({cls:'wr',icon:'🚨',msg:'This trade\'s loss ($' + fmt(c.lossUSD) + ') exceeds your remaining daily budget ($' + fmt(c.dailyRemaining) + '). This trade would FAIL your challenge!'});
+  else if (c.lossUSD > c.dailyRemaining * 0.75)
+    W.push({cls:'wam',icon:'⛔',msg:'Loss uses ' + ((c.lossUSD/c.dailyRemaining)*100).toFixed(0) + '% of remaining daily budget. Reduce lot size.'});
 
-  $('rrRiskBar').style.width = '50%';
-  $('warningsBox').innerHTML = '';
+  if (dailyUsedPct >= 4)
+    W.push({cls:'wr',icon:'🔴',msg:'Daily loss limit (4%) hit! You must stop trading today or risk failing the challenge.'});
+  else if (dailyUsedPct > 3)
+    W.push({cls:'wr',icon:'🔴',msg:'Daily loss at ' + dailyUsedPct.toFixed(2) + '% — only ' + (4-dailyUsedPct).toFixed(2) + '% left. Stop trading today.'});
+  else if (dailyUsedPct > 2)
+    W.push({cls:'wam',icon:'⚠',msg:'Daily loss at ' + dailyUsedPct.toFixed(2) + '% of 4% limit. Be very selective with entries.'});
 
-  ['rb-loss','rb-profit','rb-lot','rb-safe','rb-risk','rb-rr'].forEach(id => {
-    $(id).className = 'result-box';
-  });
+  if (totalUsedPct >= 8)
+    W.push({cls:'wr',icon:'💀',msg:'Max drawdown (8%) reached. Challenge failed. No more trading!'});
+  else if (totalUsedPct > 6)
+    W.push({cls:'wr',icon:'💀',msg:'Total drawdown at ' + totalUsedPct.toFixed(2) + '% — dangerously close to the 8% limit. Minimum lots only.'});
+  else if (totalUsedPct > 4)
+    W.push({cls:'wam',icon:'⛔',msg:'Total drawdown at ' + totalUsedPct.toFixed(2) + '% of 8% max. Trade carefully.'});
+
+  if (c.riskUsedPct > 2)
+    W.push({cls:'wr',icon:'🚨',msg:'Risk is ' + fmt(c.riskUsedPct) + '% per trade — dangerously high for a prop challenge.'});
+  else if (c.riskUsedPct > 1)
+    W.push({cls:'wam',icon:'⚠',msg:'Risk is ' + fmt(c.riskUsedPct) + '%. Recommended max is 1% per trade to pass safely.'});
+
+  if (c.rr < 1)
+    W.push({cls:'wr',icon:'📉',msg:'R:R below 1:1. Never trade when your risk is bigger than your reward.'});
+  else if (c.rr < 1.5)
+    W.push({cls:'wam',icon:'📉',msg:'R:R of ' + fmt(c.rr) + ':1 is low. You need at least 60%+ win rate to be profitable here.'});
+
+  if (c.slDist < 2)
+    W.push({cls:'wbl',icon:'ℹ',msg:'SL is very tight (' + c.slDist.toFixed(2) + ' pts). Gold spikes frequently — wider SL avoids premature stop-outs.'});
+
+  if (c.riskUsedPct <= 0.5 && c.rr >= 2 && c.lossUSD < c.dailyRemaining * 0.3)
+    W.push({cls:'wgr',icon:'✅',msg:'Risk ' + fmt(c.riskUsedPct) + '% · R:R ' + fmt(c.rr) + ':1 · Daily impact ' + ((c.lossUSD/c.dailyLossLimit)*100).toFixed(1) + '%. Trade within safe challenge parameters.'});
+
+  $('warningsBox').innerHTML = W.map(w =>
+    `<div class="warn-item ${w.cls}"><span class="wi">${w.icon}</span><span>${w.msg}</span></div>`
+  ).join('');
 }
 
-// ── Trade Log ──
+function useSafeLot() {
+  if (!currentCalc) return;
+  $('lotSize').value = Math.max(0.01, Math.min(currentCalc.safeLotVal, currentCalc.maxSafeLotChallenge)).toFixed(2);
+  calculate();
+}
+
+function resetAll() {
+  ['entryPrice','stopLoss','takeProfit','lotSize'].forEach(id => $(id).value = '');
+  currentCalc = null;
+  $('tradeBadge').className = 'none'; $('tradeBadge').textContent = '— WAITING —';
+  $('statusBadge').className = 'idle'; $('statusBadge').textContent = '● IDLE';
+  ['lossUSD','profitUSD','autoLot','safeLot','riskUsed','rrRatio','lossSub','profitSub',
+   'autoLotSub','riskUsedSub','rrSub','slPoints','tpPoints','slPips','tpPips',
+   'rrBarLabel','safetyScore','advVal-cons','advVal-opt','advVal-agg',
+   'advSub-cons','advSub-opt','advSub-agg'
+  ].forEach(id => { const e=$(id); if(e) e.textContent='—'; });
+  $('rrRiskLabel').textContent='RISK'; $('rrRewardLabel').textContent='REWARD';
+  $('rrRiskBar').style.width='50%'; $('dangerBar').style.width='0%';
+  $('warningsBox').innerHTML='';
+  $('advTip').innerHTML='💡 Enter your trade details above to get intelligent lot size recommendations.';
+  ['rb-loss','rb-profit','rb-lot','rb-safe','rb-risk','rb-rr'].forEach(id => $(id).className='rbox');
+}
+
 function addToLog() {
-  if (!currentCalc) {
-    alert('Calculate a trade first.');
-    return;
-  }
+  if (!currentCalc) { alert('Calculate a trade first.'); return; }
   logCounter++;
   const c = currentCalc;
-  const entry = {
-    id: logCounter,
-    type: c.tradeType,
-    entry: c.entry,
-    sl: c.sl,
-    tp: c.tp,
-    lot: c.usedLot,
-    loss: c.lossUSD,
-    profit: c.profitUSD,
-    rr: c.rr,
-    riskPct: c.riskUsedPct,
-    time: new Date().toLocaleTimeString()
-  };
-  tradeLog.unshift(entry);
+  tradeLog.unshift({ id:logCounter, type:c.tradeType, entry:c.entry, sl:c.sl, tp:c.tp,
+    lot:c.usedLot, loss:c.lossUSD, profit:c.profitUSD, rr:c.rr, riskPct:c.riskUsedPct,
+    time:new Date().toLocaleTimeString() });
   renderLog();
 }
-
-function deleteLog(id) {
-  tradeLog = tradeLog.filter(t => t.id !== id);
-  renderLog();
-}
-
-function clearLog() {
-  tradeLog = [];
-  logCounter = 0;
-  renderLog();
-}
-
+function deleteLog(id) { tradeLog = tradeLog.filter(t => t.id !== id); renderLog(); }
+function clearLog() { tradeLog = []; logCounter = 0; renderLog(); }
 function renderLog() {
   const list = $('logList');
-  const empty = $('logEmpty');
-
-  if (tradeLog.length === 0) {
-    empty.style.display = 'block';
-    list.innerHTML = '';
-    list.appendChild(empty);
-    $('logCount').textContent = '0';
-    $('logAvgRR').textContent = '—';
-    $('logTotalRisk').textContent = '$0';
-    $('logAvgLot').textContent = '—';
+  if (!tradeLog.length) {
+    list.innerHTML = '<div class="log-empty">No trades logged yet.</div>';
+    ['logCount','logAvgRR','logTotalRisk','logAvgLot'].forEach(id => $(id).textContent = id==='logCount'?'0':id==='logTotalRisk'?'$0':'—');
     return;
   }
-
-  const avgRR = (tradeLog.reduce((s, t) => s + t.rr, 0) / tradeLog.length).toFixed(2);
-  const totalRisk = tradeLog.reduce((s, t) => s + t.loss, 0).toFixed(2);
-  const avgLot = (tradeLog.reduce((s, t) => s + t.lot, 0) / tradeLog.length).toFixed(2);
-
-  $('logCount').textContent = tradeLog.length;
-  $('logAvgRR').textContent = '1:' + avgRR;
-  $('logTotalRisk').textContent = '$' + totalRisk;
-  $('logAvgLot').textContent = avgLot;
-
+  $('logCount').textContent    = tradeLog.length;
+  $('logAvgRR').textContent    = '1:' + (tradeLog.reduce((s,t)=>s+t.rr,0)/tradeLog.length).toFixed(2);
+  $('logTotalRisk').textContent= '$' + tradeLog.reduce((s,t)=>s+t.loss,0).toFixed(2);
+  $('logAvgLot').textContent   = (tradeLog.reduce((s,t)=>s+t.lot,0)/tradeLog.length).toFixed(2);
   list.innerHTML = tradeLog.map(t => `
     <div class="log-item">
-      <span class="log-badge ${t.type.toLowerCase()}">${t.type}</span>
-      <div class="log-info">
+      <span class="lbadge ${t.type.toLowerCase()}">${t.type}</span>
+      <div class="l-info">
         <div>${t.entry.toFixed(2)} → SL ${t.sl.toFixed(2)} / TP ${t.tp.toFixed(2)}</div>
-        <div>Lot: ${t.lot.toFixed(2)} · Risk: ${t.riskPct.toFixed(2)}% · Loss: $${t.loss.toFixed(2)} · ${t.time}</div>
+        <div>Lot ${t.lot.toFixed(2)} · ${t.riskPct.toFixed(2)}% · -$${t.loss.toFixed(2)} / +$${t.profit.toFixed(2)} · ${t.time}</div>
       </div>
-      <span class="log-rr">1:${t.rr.toFixed(2)}</span>
-      <button class="log-del" onclick="deleteLog(${t.id})" title="Remove">✕</button>
-    </div>
-  `).join('');
+      <span class="l-rr">1:${t.rr.toFixed(2)}</span>
+      <button class="l-del" onclick="deleteLog(${t.id})">✕</button>
+    </div>`).join('');
 }
 
-// ── Collapse ──
-function toggleCollapse(id, btn) {
-  const el = $(id);
-  const isOpen = btn.classList.contains('open');
-  if (isOpen) {
-    el.style.maxHeight = '0';
-    btn.classList.remove('open');
-    btn.querySelector('.arrow').style.transform = 'rotate(0deg)';
-  } else {
-    el.style.maxHeight = el.scrollHeight + 'px';
-    btn.classList.add('open');
-    btn.querySelector('.arrow').style.transform = 'rotate(180deg)';
-  }
+function toggleCol(id, btn) {
+  const el = $(id), open = btn.classList.contains('open');
+  if (open) { el.style.maxHeight='0'; btn.classList.remove('open'); btn.querySelector('.arr').style.transform='rotate(0deg)'; }
+  else { el.style.maxHeight=el.scrollHeight+'px'; btn.classList.add('open'); btn.querySelector('.arr').style.transform='rotate(180deg)'; }
 }
 
-// ── Event listeners ──
-['entryPrice','stopLoss','takeProfit','lotSize'].forEach(id => {
-  $(id).addEventListener('input', calculate);
-});
-$('accountSize').addEventListener('input', () => {
-  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-  syncRiskFromPct();
-});
+['entryPrice','stopLoss','takeProfit','lotSize'].forEach(id => $(id).addEventListener('input', calculate));
+['startBal','currentBal','dayStartBal'].forEach(id => $(id).addEventListener('input', updateChallenge));
 $('riskPct').addEventListener('input', syncRiskFromPct);
 $('riskAmt').addEventListener('input', syncRiskFromAmt);
+$('startBal').addEventListener('input', () => document.querySelectorAll('.pbtn').forEach(b => b.classList.remove('active')));
 
-// Init
-updateBanner();
+updateChallenge();
 </script>
 </body>
 </html>
