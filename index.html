@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>XAUUSD Prop Firm Calculator</title>
+<title>Prop Firm Risk Calculator — Multi-Instrument</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
 :root{
@@ -14,169 +15,274 @@
   --blue:#3b82f6;--blue-dim:rgba(59,130,246,0.1);
   --amber:#f59e0b;--amber-dim:rgba(245,158,11,0.1);
   --purple:#a855f7;--purple-dim:rgba(168,85,247,0.1);
+  --cyan:#06b6d4;--cyan-dim:rgba(6,182,212,0.1);
   --text:#dde4ef;--muted:#4e6070;--dim:#7a92a8;
   --mono:'Share Tech Mono',monospace;--sans:'Rajdhani',sans-serif;--r:10px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;min-height:100vh}
 body::before{content:'';position:fixed;inset:0;
-  background-image:linear-gradient(rgba(240,180,41,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(240,180,41,0.025) 1px,transparent 1px);
+  background-image:linear-gradient(rgba(240,180,41,0.025) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(240,180,41,0.025) 1px,transparent 1px);
   background-size:44px 44px;pointer-events:none;z-index:0}
-.wrap{position:relative;z-index:1;max-width:540px;margin:0 auto;padding:14px 13px 50px}
-header{text-align:center;padding:20px 0 16px}
+.wrap{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:14px 13px 50px}
+
+/* ── HEADER ── */
+header{text-align:center;padding:18px 0 14px}
 .logo-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:3px}
-.logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:9px;
-  display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 20px rgba(240,180,41,0.45)}
-header h1{font-size:22px;font-weight:700;letter-spacing:2.5px;color:var(--gold);text-shadow:0 0 14px rgba(240,180,41,0.4)}
+.logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--gold),var(--gold2));
+  border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;
+  box-shadow:0 0 20px rgba(240,180,41,0.45)}
+header h1{font-size:21px;font-weight:700;letter-spacing:2px;color:var(--gold);text-shadow:0 0 14px rgba(240,180,41,0.4)}
 header .sub{font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-top:2px;font-family:var(--mono)}
-.challenge-panel{background:var(--card);border:1px solid var(--border2);border-radius:var(--r);padding:14px 16px;margin-bottom:12px}
-.cp-title{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:10px;
-  display:flex;align-items:center;justify-content:space-between}
+
+/* ── INSTRUMENT SELECTOR ── */
+.inst-panel{background:var(--card);border:1px solid var(--border2);border-radius:var(--r);padding:14px;margin-bottom:11px}
+.inst-title{font-size:10px;letter-spacing:2px;font-weight:700;color:var(--muted);text-transform:uppercase;
+  margin-bottom:11px;display:flex;align-items:center;gap:7px}
+.inst-title .it-icon{color:var(--gold);font-size:14px}
+.cat-tabs{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap}
+.cat-tab{background:var(--surface);border:1px solid var(--border2);border-radius:7px;
+  color:var(--muted);font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:1px;
+  padding:6px 12px;cursor:pointer;transition:all .15s;text-transform:uppercase}
+.cat-tab:hover{border-color:var(--gold);color:var(--gold)}
+.cat-tab.active{border-color:var(--gold);background:var(--gold-dim);color:var(--gold)}
+.inst-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.inst-btn{background:var(--surface);border:1px solid var(--border2);border-radius:7px;
+  padding:8px 5px;text-align:center;cursor:pointer;transition:all .15s}
+.inst-btn:hover{border-color:var(--gold);background:var(--gold-dim)}
+.inst-btn.active{border-color:var(--gold);background:var(--gold-dim)}
+.ib-emoji{font-size:16px;line-height:1}
+.ib-name{font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--text);margin-top:3px}
+.ib-type{font-size:8px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-top:1px}
+/* Selected instrument info bar */
+.inst-info{background:var(--surface);border:1px solid var(--border2);border-radius:8px;
+  padding:10px 13px;margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ii-badge{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:5px;
+  background:var(--gold-dim);border:1px solid rgba(240,180,41,.3);color:var(--gold);font-weight:700}
+.ii-detail{flex:1;font-size:11px;color:var(--dim);font-family:var(--mono);line-height:1.7}
+.ii-detail .iid-row{display:flex;gap:12px;flex-wrap:wrap}
+.iid-val{color:var(--text)}
+
+/* Custom instrument input */
+.custom-inst{background:var(--surface);border:1px solid var(--border2);border-radius:8px;
+  padding:11px 12px;margin-top:8px}
+.ci-title{font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;
+  font-weight:700;margin-bottom:8px}
+.ci-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
+
+/* ── NEWS GUARD ── */
+.news-panel{border-radius:var(--r);padding:13px 15px;margin-bottom:11px;transition:all .3s}
+.news-panel.safe{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.3)}
+.news-panel.warning{background:rgba(245,158,11,.09);border:1px solid rgba(245,158,11,.4)}
+.news-panel.danger{background:rgba(239,68,68,.1);border:2px solid rgba(239,68,68,.6);animation:bPulse 1.5s infinite}
+@keyframes bPulse{0%,100%{border-color:rgba(239,68,68,.6)}50%{border-color:rgba(239,68,68,1)}}
+.np-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;gap:8px;flex-wrap:wrap}
+.np-title{font-size:10px;letter-spacing:2px;font-weight:700;text-transform:uppercase;display:flex;align-items:center;gap:7px}
+.np-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.np-dot.safe{background:var(--green);box-shadow:0 0 8px var(--green)}
+.np-dot.warning{background:var(--amber);box-shadow:0 0 8px var(--amber);animation:dp .9s infinite}
+.np-dot.danger{background:var(--red);box-shadow:0 0 10px var(--red);animation:dp .6s infinite}
+@keyframes dp{0%,100%{opacity:1}50%{opacity:.2}}
+.np-date{font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:4px;
+  background:var(--surface);border:1px solid var(--border2);color:var(--dim)}
+.np-bar{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;
+  background:var(--surface);border:1px solid var(--border);margin-bottom:9px}
+.np-icon{font-size:20px;flex-shrink:0}
+.np-content{flex:1}
+.np-headline{font-size:13px;font-weight:700;letter-spacing:.5px;line-height:1.3}
+.np-headline.safe{color:var(--green)}.np-headline.warning{color:var(--amber)}.np-headline.danger{color:var(--red)}
+.np-sub{font-size:11px;color:var(--muted);margin-top:2px;font-family:var(--mono)}
+.news-evt{display:flex;align-items:center;gap:7px;padding:6px 10px;border-radius:6px;
+  background:var(--surface);border:1px solid var(--border);margin-bottom:5px}
+.news-evt.today{border-color:var(--red);background:var(--red-dim)}
+.news-evt.tomorrow{border-color:var(--amber);background:var(--amber-dim)}
+.ei{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ei.high{background:var(--red);box-shadow:0 0 4px var(--red)}
+.ei.medium{background:var(--amber)}.ei.low{background:var(--green)}
+.ed{font-family:var(--mono);font-size:10px;color:var(--muted);min-width:50px;white-space:nowrap}
+.en{font-size:12px;color:var(--text);flex:1;font-weight:600}
+.news-evt.today .en{color:var(--red)}.news-evt.tomorrow .en{color:var(--amber)}
+.et2{font-family:var(--mono);font-size:10px;color:var(--muted);white-space:nowrap}
+.etag{font-size:8px;padding:2px 5px;border-radius:3px;font-weight:700;flex-shrink:0}
+.tag-r{background:var(--red-dim);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.tag-a{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(245,158,11,.3)}
+.cd-row{display:flex;justify-content:center;gap:8px;margin:8px 0}
+.cd-box{background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:5px 9px;text-align:center;min-width:48px}
+.cd-val{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--amber)}
+.cd-lbl{font-size:8px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.week-strip{display:flex;gap:5px;overflow-x:auto;padding-bottom:3px}
+.week-strip::-webkit-scrollbar{height:3px}
+.week-strip::-webkit-scrollbar-thumb{background:var(--border2)}
+.day-box{flex:0 0 auto;width:52px;background:var(--surface);border:1px solid var(--border);
+  border-radius:6px;padding:5px 3px;text-align:center}
+.day-box.tc{border-color:var(--gold);background:var(--gold-dim)}
+.day-box.hh{border-color:var(--red)}
+.day-box.hm{border-color:var(--amber)}
+.db-n{font-size:8px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.db-d{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text);margin:2px 0}
+.day-box.tc .db-d{color:var(--gold)}
+.db-dots{display:flex;justify-content:center;gap:2px;min-height:7px}
+.db-dot{width:5px;height:5px;border-radius:50%}
+
+/* ── CHALLENGE TRACKER ── */
+.challenge-panel{background:var(--card);border:1px solid var(--border2);border-radius:var(--r);padding:14px 15px;margin-bottom:11px}
+.cp-title{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-weight:700;
+  margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
 .badge-firm{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:4px;
-  background:var(--gold-dim);border:1px solid rgba(240,180,41,0.3);color:var(--gold)}
-.cp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
-.cp-stat{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 10px;text-align:center}
-.cp-stat .csv{font-family:var(--mono);font-size:14px;font-weight:700}
-.cp-stat .csl{font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-top:2px}
-.cp-stat .css2{font-size:9px;color:var(--muted);font-family:var(--mono);margin-top:1px}
-.prog-row{margin-bottom:8px}
-.prog-label{display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px}
+  background:var(--gold-dim);border:1px solid rgba(240,180,41,.3);color:var(--gold)}
+.cp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:11px}
+.cp-stat{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center}
+.cp-stat .csv{font-family:var(--mono);font-size:13px;font-weight:700}
+.cp-stat .csl{font-size:8px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-top:2px}
+.cp-stat .css2{font-size:8px;color:var(--muted);font-family:var(--mono);margin-top:1px}
+.prog-row{margin-bottom:7px}
+.prog-label{display:flex;justify-content:space-between;font-size:9px;margin-bottom:3px}
 .pl-name{color:var(--dim);letter-spacing:1px;text-transform:uppercase;font-weight:600}
-.pl-val{font-family:var(--mono);font-size:10px}
-.prog-track{height:6px;background:var(--border2);border-radius:3px;overflow:hidden}
-.prog-fill{height:100%;border-radius:3px;transition:width 0.4s ease}
-.pf-profit{background:linear-gradient(90deg,var(--green),#16a34a)}
-.pf-daily{background:linear-gradient(90deg,var(--amber),var(--red))}
-.pf-total{background:linear-gradient(90deg,var(--blue),var(--purple))}
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:15px;margin-bottom:11px}
+.pl-val{font-family:var(--mono);font-size:9px}
+.prog-track{height:5px;background:var(--border2);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .4s ease}
+.pf-p{background:linear-gradient(90deg,var(--green),#16a34a)}
+.pf-d{background:linear-gradient(90deg,var(--amber),var(--red))}
+.pf-t{background:linear-gradient(90deg,var(--blue),var(--purple))}
+
+/* ── GENERIC CARD ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:11px}
 .card-title{font-size:10px;letter-spacing:2px;font-weight:700;color:var(--muted);text-transform:uppercase;
-  margin-bottom:12px;display:flex;align-items:center;gap:7px}
+  margin-bottom:11px;display:flex;align-items:center;gap:7px}
 .ct-icon{color:var(--gold);font-size:14px}
 .input-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .ig{display:flex;flex-direction:column;gap:5px}
-.ig.full{grid-column:1/-1}
-.ig label{font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;font-weight:700}
+.ig label{font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;font-weight:700}
 .req{color:var(--gold)}
 .inp-wrap{position:relative}
-.pfx{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:12px;color:var(--muted);pointer-events:none}
-input[type=number]{width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:7px;
-  color:var(--text);font-family:var(--mono);font-size:14px;padding:10px 10px 10px 26px;outline:none;
-  transition:border-color .2s,box-shadow .2s;-moz-appearance:textfield}
+.pfx{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:11px;color:var(--muted);pointer-events:none}
+input[type=number],select{width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:7px;
+  color:var(--text);font-family:var(--mono);font-size:13px;padding:9px 9px 9px 25px;outline:none;
+  transition:border-color .2s,box-shadow .2s;-moz-appearance:textfield;appearance:none}
 input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
-input[type=number]:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(240,180,41,0.15)}
-.inp-hint{font-size:9px;color:var(--muted);font-family:var(--mono)}
-.risk-row{display:flex;align-items:center;gap:10px;margin-top:9px}
-.risk-row label{font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;font-weight:700;white-space:nowrap}
+input[type=number]:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(240,180,41,.15)}
+select{padding-left:9px;cursor:pointer}
+.inp-hint{font-size:8px;color:var(--muted);font-family:var(--mono)}
+.risk-row{display:flex;align-items:center;gap:10px;margin-top:8px}
+.risk-row label{font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;font-weight:700;white-space:nowrap}
 input[type=range]{flex:1;-webkit-appearance:none;height:4px;background:var(--border2);border-radius:2px;outline:none}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--gold);cursor:pointer;box-shadow:0 0 6px rgba(240,180,41,0.5)}
-input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--gold);cursor:pointer;border:none}
-.risk-val{font-family:var(--mono);font-size:14px;color:var(--gold);min-width:42px;text-align:right}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--gold);cursor:pointer;box-shadow:0 0 5px rgba(240,180,41,.5)}
+input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--gold);cursor:pointer;border:none}
+.risk-val{font-family:var(--mono);font-size:13px;color:var(--gold);min-width:40px;text-align:right}
 .preset-btns{display:flex;gap:5px;flex-wrap:wrap}
 .pbtn{background:var(--surface);border:1px solid var(--border2);border-radius:6px;
-  color:var(--dim);font-family:var(--mono);font-size:11px;padding:7px 9px;cursor:pointer;transition:all .15s;white-space:nowrap}
+  color:var(--dim);font-family:var(--mono);font-size:10px;padding:6px 8px;cursor:pointer;transition:all .15s;white-space:nowrap}
 .pbtn:hover,.pbtn.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
-.badge-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:7px}
-#tradeBadge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;
-  font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:2px;transition:all .2s}
+.badge-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;flex-wrap:wrap;gap:6px}
+#tradeBadge{display:inline-flex;align-items:center;gap:5px;padding:5px 13px;border-radius:20px;
+  font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:2px;transition:all .2s}
 #tradeBadge.buy{background:var(--green-dim);border:1px solid var(--green);color:var(--green)}
 #tradeBadge.sell{background:var(--red-dim);border:1px solid var(--red);color:var(--red)}
 #tradeBadge.none{background:var(--border);border:1px solid var(--border2);color:var(--muted)}
-#statusBadge{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;
-  font-size:10px;letter-spacing:1.5px;font-weight:700;transition:all .2s}
+#statusBadge{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;
+  font-size:9px;letter-spacing:1.5px;font-weight:700;transition:all .2s}
 #statusBadge.safe{background:var(--green-dim);border:1px solid var(--green);color:var(--green)}
 #statusBadge.ok{background:var(--amber-dim);border:1px solid var(--amber);color:var(--amber)}
 #statusBadge.danger{background:var(--red-dim);border:1px solid var(--red);color:var(--red)}
 #statusBadge.idle{background:var(--border);border:1px solid var(--border2);color:var(--muted)}
-.results-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.rbox{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px 13px;transition:all .2s}
+.results-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rbox{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;transition:all .2s}
 .rbox.g{border-color:var(--green);background:var(--green-dim)}
 .rbox.r{border-color:var(--red);background:var(--red-dim)}
 .rbox.go{border-color:var(--gold);background:var(--gold-dim)}
 .rbox.b{border-color:var(--blue);background:var(--blue-dim)}
 .rbox.am{border-color:var(--amber);background:var(--amber-dim)}
-.rbox .rl{font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:5px;font-weight:700}
-.rbox .rv{font-family:var(--mono);font-size:18px;font-weight:700;line-height:1}
-.rbox.g .rv{color:var(--green)}.rbox.r .rv{color:var(--red)}.rbox.go .rv{color:var(--gold)}.rbox.b .rv{color:var(--blue)}.rbox.am .rv{color:var(--amber)}
-.rbox .rs{font-size:9px;color:var(--muted);margin-top:3px;font-family:var(--mono)}
-.rr-wrap{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:9px}
-.rr-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.rh-l{font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;font-weight:700}
-.rh-r{font-family:var(--mono);font-size:14px;color:var(--gold)}
-.rr-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;gap:2px}
+.rbox.cy{border-color:var(--cyan);background:var(--cyan-dim)}
+.rbox .rl{font-size:8px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;font-weight:700}
+.rbox .rv{font-family:var(--mono);font-size:17px;font-weight:700;line-height:1}
+.rbox.g .rv{color:var(--green)}.rbox.r .rv{color:var(--red)}.rbox.go .rv{color:var(--gold)}.rbox.b .rv{color:var(--blue)}.rbox.am .rv{color:var(--amber)}.rbox.cy .rv{color:var(--cyan)}
+.rbox .rs{font-size:8px;color:var(--muted);margin-top:3px;font-family:var(--mono)}
+.rr-wrap{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px 13px;margin-top:8px}
+.rr-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.rh-l{font-size:8px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;font-weight:700}
+.rh-r{font-family:var(--mono);font-size:13px;color:var(--gold)}
+.rr-bar{display:flex;height:7px;border-radius:4px;overflow:hidden;gap:2px}
 .rr-risk{background:var(--red);border-radius:3px;transition:width .4s ease;min-width:3px}
 .rr-reward{background:var(--green);border-radius:3px;flex:1}
-.rr-foot{display:flex;justify-content:space-between;margin-top:5px;font-size:9px;color:var(--muted);font-family:var(--mono)}
-.pts-row{display:flex;gap:7px;margin-top:9px}
-.pbox{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;text-align:center}
-.pbox .pv{font-family:var(--mono);font-size:15px;color:var(--dim);font-weight:600}
-.pbox .pl{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
-.advisor-panel{background:linear-gradient(135deg,rgba(168,85,247,0.06),rgba(59,130,246,0.06));
-  border:1px solid rgba(168,85,247,0.25);border-radius:var(--r);padding:14px;margin-bottom:11px}
+.rr-foot{display:flex;justify-content:space-between;margin-top:4px;font-size:8px;color:var(--muted);font-family:var(--mono)}
+.pts-row{display:flex;gap:6px;margin-top:8px}
+.pbox{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 9px;text-align:center}
+.pbox .pv{font-family:var(--mono);font-size:14px;color:var(--dim);font-weight:600}
+.pbox .pl{font-size:8px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+/* Instrument-specific info box */
+.inst-calc-info{background:var(--surface);border:1px solid var(--border2);border-radius:8px;
+  padding:10px 12px;margin-top:8px;font-family:var(--mono);font-size:11px;line-height:1.9}
+.ici-row{display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid var(--border)}
+.ici-row:last-child{border-bottom:none}
+.ici-lbl{color:var(--muted)}
+.ici-val{color:var(--text);font-weight:600}
+.ici-val.g{color:var(--green)}.ici-val.r{color:var(--red)}.ici-val.go{color:var(--gold)}
+/* Advisor */
+.advisor-panel{background:linear-gradient(135deg,rgba(168,85,247,.06),rgba(59,130,246,.06));
+  border:1px solid rgba(168,85,247,.25);border-radius:var(--r);padding:13px;margin-bottom:11px}
 .advisor-title{font-size:10px;letter-spacing:2px;font-weight:700;color:var(--purple);text-transform:uppercase;
-  display:flex;align-items:center;gap:7px;margin-bottom:11px}
-.ai-dot{width:7px;height:7px;border-radius:50%;background:var(--purple);box-shadow:0 0 8px var(--purple);animation:pulse 1.5s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.adv-lot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px}
-.adv-lot{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:9px 10px;
+  display:flex;align-items:center;gap:7px;margin-bottom:10px}
+.ai-dot{width:7px;height:7px;border-radius:50%;background:var(--purple);box-shadow:0 0 8px var(--purple);animation:dp 1.5s infinite}
+.adv-lot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:9px}
+.adv-lot{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:9px 8px;
   text-align:center;cursor:pointer;transition:all .15s}
 .adv-lot:hover{border-color:var(--purple);background:var(--purple-dim)}
 .adv-lot.recommended{border-color:var(--gold);background:var(--gold-dim)}
-.al-name{font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:4px}
-.al-val{font-family:var(--mono);font-size:17px;font-weight:700;color:var(--text)}
+.al-name{font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:3px}
+.al-val{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--text)}
 .adv-lot.recommended .al-val{color:var(--gold)}
 .al-sub{font-size:9px;color:var(--muted);font-family:var(--mono);margin-top:2px}
-.al-badge{font-size:8px;padding:2px 5px;border-radius:3px;margin-top:4px;display:inline-block;font-weight:700;letter-spacing:.5px}
-.adv-tip{background:var(--surface);border:1px solid var(--border2);border-radius:7px;padding:10px 12px;
+.al-badge{font-size:8px;padding:2px 5px;border-radius:3px;margin-top:3px;display:inline-block;font-weight:700}
+.adv-tip{background:var(--surface);border:1px solid var(--border2);border-radius:7px;padding:9px 11px;
   font-size:12px;line-height:1.6;color:var(--dim)}
-#warningsBox{margin-top:9px}
-.warn-item{display:flex;align-items:flex-start;gap:8px;border-radius:7px;padding:9px 12px;margin-bottom:6px;font-size:12px;line-height:1.5}
-.wr{background:var(--red-dim);border:1px solid rgba(239,68,68,0.25)}
-.wam{background:var(--amber-dim);border:1px solid rgba(245,158,11,0.25)}
-.wbl{background:var(--blue-dim);border:1px solid rgba(59,130,246,0.25)}
-.wgr{background:var(--green-dim);border:1px solid rgba(34,197,94,0.25)}
-.wi{font-size:14px;flex-shrink:0;margin-top:1px}
-.btn-row{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap}
-.btn{flex:1;min-width:90px;padding:10px 12px;border-radius:8px;font-family:var(--sans);font-size:13px;
+/* Warnings */
+#warningsBox{margin-top:8px}
+.warn-item{display:flex;align-items:flex-start;gap:7px;border-radius:7px;padding:8px 11px;margin-bottom:5px;font-size:12px;line-height:1.5}
+.wr{background:var(--red-dim);border:1px solid rgba(239,68,68,.25)}
+.wam{background:var(--amber-dim);border:1px solid rgba(245,158,11,.25)}
+.wbl{background:var(--blue-dim);border:1px solid rgba(59,130,246,.25)}
+.wgr{background:var(--green-dim);border:1px solid rgba(34,197,94,.25)}
+.wi{font-size:13px;flex-shrink:0;margin-top:1px}
+/* Buttons */
+.btn-row{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+.btn{flex:1;min-width:85px;padding:9px 11px;border-radius:8px;font-family:var(--sans);font-size:13px;
   font-weight:700;letter-spacing:1px;cursor:pointer;border:1px solid transparent;transition:all .15s;text-transform:uppercase}
 .btn-gold{background:var(--gold);color:#000;border-color:var(--gold)}
 .btn-gold:hover{background:var(--gold2)}
 .btn-outline{background:transparent;color:var(--dim);border-color:var(--border2)}
 .btn-outline:hover{border-color:var(--gold);color:var(--gold)}
 .btn-green{background:var(--green-dim);color:var(--green);border-color:var(--green)}
-.btn-green:hover{background:rgba(34,197,94,.2)}
 .btn-red{background:var(--red-dim);color:var(--red);border-color:var(--red)}
-.btn-red:hover{background:rgba(239,68,68,.2)}
+/* Collapse */
 .col-btn{background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;
-  font-family:var(--sans);font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-weight:700;padding:0;width:100%}
+  font-family:var(--sans);font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-weight:700;padding:0;width:100%}
 .col-btn:hover{color:var(--dim)}
-.arr{transition:transform .2s;font-size:10px}
+.arr{transition:transform .2s;font-size:9px}
 .col-btn.open .arr{transform:rotate(180deg)}
 .collapsible{overflow:hidden;transition:max-height .3s ease}
-.log-stats{display:flex;gap:7px;margin-bottom:9px;flex-wrap:wrap}
-.lstat{flex:1;min-width:75px;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 11px;text-align:center}
-.lsv{font-family:var(--mono);font-size:14px;font-weight:600}
-.lsl{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
-.log-list{max-height:210px;overflow-y:auto}
+/* Log */
+.log-stats{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.lstat{flex:1;min-width:70px;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 10px;text-align:center}
+.lsv{font-family:var(--mono);font-size:13px;font-weight:600}
+.lsl{font-size:8px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.log-list{max-height:200px;overflow-y:auto}
 .log-list::-webkit-scrollbar{width:3px}
 .log-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-.log-empty{text-align:center;color:var(--muted);font-family:var(--mono);font-size:12px;padding:18px 0}
-.log-item{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border);
-  border-radius:7px;padding:8px 11px;margin-bottom:5px;font-size:11px;font-family:var(--mono);animation:fadeIn .2s ease}
+.log-empty{text-align:center;color:var(--muted);font-family:var(--mono);font-size:11px;padding:16px 0}
+.log-item{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);
+  border-radius:7px;padding:7px 10px;margin-bottom:4px;font-size:11px;font-family:var(--mono);animation:fadeIn .2s}
 @keyframes fadeIn{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
-.lbadge{padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:1px;flex-shrink:0}
+.lbadge{padding:2px 5px;border-radius:4px;font-size:8px;font-weight:700;letter-spacing:1px;flex-shrink:0}
 .lbadge.buy{background:var(--green-dim);color:var(--green)}
 .lbadge.sell{background:var(--red-dim);color:var(--red)}
-.l-info{flex:1;color:var(--dim);line-height:1.7}
-.l-rr{color:var(--gold);margin-left:auto;white-space:nowrap}
-.l-del{background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;padding:0 2px;transition:color .15s}
+.l-info{flex:1;color:var(--dim);line-height:1.6}
+.l-rr{color:var(--gold);margin-left:auto;white-space:nowrap;font-size:11px}
+.l-del{background:none;border:none;cursor:pointer;color:var(--muted);font-size:12px;padding:0 2px;transition:color .15s}
 .l-del:hover{color:var(--red)}
-.pip-guide{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:12px;
-  font-family:var(--mono);font-size:11px;color:var(--muted);line-height:2;margin-top:11px}
-.ph{color:var(--gold);font-weight:700}
-.pv2{color:var(--dim)}
 @media(max-width:400px){
-  .results-grid,.input-grid{grid-template-columns:1fr}
-  .ig.full{grid-column:auto}
+  .results-grid,.input-grid,.ci-grid{grid-template-columns:1fr}
+  .inst-grid{grid-template-columns:repeat(3,1fr)}
   .adv-lot-grid{grid-template-columns:1fr 1fr}
   .cp-grid{grid-template-columns:1fr 1fr}
 }
@@ -188,18 +294,121 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <header>
   <div class="logo-row">
     <div class="logo-icon">⚡</div>
-    <h1>XAUUSD CALC</h1>
+    <h1>PROP RISK CALC</h1>
   </div>
-  <div class="sub">Prop Firm Challenge · Gold Edition</div>
+  <div class="sub">Multi-Instrument · Maven Prop Firm · No-News Guard</div>
 </header>
 
-<!-- ── CHALLENGE TRACKER ── -->
+<!-- ══════════════════════════════════
+     INSTRUMENT SELECTOR
+══════════════════════════════════ -->
+<div class="inst-panel">
+  <div class="inst-title"><span class="it-icon">⬡</span> Select Instrument</div>
+  <div class="cat-tabs">
+    <button class="cat-tab active" onclick="filterCat('metals',this)">🥇 Metals</button>
+    <button class="cat-tab" onclick="filterCat('forex',this)">💱 Forex</button>
+    <button class="cat-tab" onclick="filterCat('crypto',this)">₿ Crypto</button>
+    <button class="cat-tab" onclick="filterCat('indices',this)">📈 Indices</button>
+    <button class="cat-tab" onclick="filterCat('custom',this)">⚙ Custom</button>
+  </div>
+  <div class="inst-grid" id="instGrid"></div>
+
+  <!-- Custom instrument section -->
+  <div class="custom-inst" id="customInstBox" style="display:none">
+    <div class="ci-title">⚙ Custom Instrument Settings</div>
+    <div class="ci-grid">
+      <div class="ig">
+        <label>Symbol</label>
+        <div class="inp-wrap"><span class="pfx" style="font-size:9px">SYM</span>
+          <input type="text" id="custSymbol" placeholder="EURUSD" maxlength="12"
+            style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:var(--mono);font-size:13px;padding:9px 9px 9px 38px;outline:none"
+            oninput="applyCustom()">
+        </div>
+      </div>
+      <div class="ig">
+        <label>Pip Value / 0.01 lot ($)</label>
+        <div class="inp-wrap"><span class="pfx">$</span>
+          <input type="number" id="custPipVal" placeholder="1.00" step="0.01" min="0.001" oninput="applyCustom()">
+        </div>
+      </div>
+      <div class="ig">
+        <label>Pip Size (price)</label>
+        <div class="inp-wrap"><span class="pfx">#</span>
+          <input type="number" id="custPipSize" placeholder="0.0001" step="0.00001" min="0.000001" oninput="applyCustom()">
+        </div>
+      </div>
+    </div>
+    <div style="font-size:9px;color:var(--muted);font-family:var(--mono);margin-top:6px">
+      Examples: EURUSD → pip val $1.00 / 0.01lot, pip size 0.0001 · USDJPY → pip val $0.93, size 0.01 · BTC → pip val $0.01, size 1
+    </div>
+  </div>
+
+  <!-- Selected instrument info -->
+  <div class="inst-info" id="instInfoBar">
+    <span class="ii-badge" id="iiBadge">XAUUSD</span>
+    <div class="ii-detail">
+      <div class="iid-row">
+        <span>Pip val/0.01lot: <span class="iid-val" id="iiPipVal">$1.00</span></span>
+        <span>Pip size: <span class="iid-val" id="iiPipSize">0.01</span></span>
+        <span>Max safe lot: <span class="iid-val" id="iiMaxLot">0.15</span></span>
+      </div>
+      <div class="iid-row" style="margin-top:2px">
+        <span>Category: <span class="iid-val" id="iiCat">Metal</span></span>
+        <span id="iiFormula" style="color:var(--muted)">lot = Risk$ ÷ (SL_pts × 100)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     NEWS TRADING GUARD
+══════════════════════════════════ -->
+<div class="news-panel safe" id="newsPanel">
+  <div class="np-header">
+    <div class="np-title">
+      <span class="np-dot safe" id="npDot"></span>
+      <span id="npTitle" style="color:var(--green)">📰 News Guard</span>
+    </div>
+    <span class="np-date" id="npDate">Loading...</span>
+  </div>
+  <div class="np-bar" id="npBar">
+    <span class="np-icon" id="npIcon">✅</span>
+    <div class="np-content">
+      <div class="np-headline safe" id="npHeadline">CLEAR TO TRADE</div>
+      <div class="np-sub" id="npSub">No high-impact news today.</div>
+    </div>
+  </div>
+  <div id="cdArea" style="display:none;margin-bottom:8px">
+    <div style="font-size:8px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;font-weight:700;text-align:center;margin-bottom:5px">⏱ NEXT EVENT IN</div>
+    <div class="cd-row">
+      <div class="cd-box"><div class="cd-val" id="cdH">00</div><div class="cd-lbl">HRS</div></div>
+      <div class="cd-box"><div class="cd-val" id="cdM">00</div><div class="cd-lbl">MIN</div></div>
+      <div class="cd-box"><div class="cd-val" id="cdS">00</div><div class="cd-lbl">SEC</div></div>
+    </div>
+    <div style="font-size:9px;color:var(--muted);text-align:center;margin-top:4px;font-family:var(--mono)">Avoid 30 min before & after each event</div>
+  </div>
+  <div id="todayArea" style="display:none;margin-bottom:8px">
+    <div style="font-size:8px;letter-spacing:1.5px;color:var(--red);text-transform:uppercase;font-weight:700;margin-bottom:5px">🚨 TODAY'S HIGH-IMPACT EVENTS</div>
+    <div id="todayList"></div>
+  </div>
+  <div style="margin-bottom:7px">
+    <div style="font-size:8px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:6px">📅 THIS WEEK</div>
+    <div class="week-strip" id="weekStrip"></div>
+  </div>
+  <div>
+    <div style="font-size:8px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:5px">⚠ UPCOMING (14 DAYS)</div>
+    <div id="upcomingList"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     CHALLENGE TRACKER
+══════════════════════════════════ -->
 <div class="challenge-panel">
   <div class="cp-title">
     <span>⬡ Challenge Tracker</span>
     <span class="badge-firm" id="firmLabel">5K CHALLENGE</span>
   </div>
-
   <div class="input-grid" style="margin-bottom:10px">
     <div class="ig">
       <label>Starting Balance <span class="req">*</span></label>
@@ -229,69 +438,35 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
       </div>
     </div>
   </div>
-
   <div class="cp-grid">
-    <div class="cp-stat">
-      <div class="csv" id="statPnl" style="color:var(--green)">$0.00</div>
-      <div class="csl">Total P&amp;L</div>
-      <div class="css2" id="statPnlPct">0.00%</div>
-    </div>
-    <div class="cp-stat">
-      <div class="csv" id="statDailyUsed" style="color:var(--amber)">$0.00</div>
-      <div class="csl">Daily Loss Used</div>
-      <div class="css2" id="statDailyLeft">$200 left</div>
-    </div>
-    <div class="cp-stat">
-      <div class="csv" id="statTradesNeeded" style="color:var(--blue)">~8 wins</div>
-      <div class="csl">Wins to Target</div>
-      <div class="css2" id="statTargetLeft">$400 to go</div>
-    </div>
+    <div class="cp-stat"><div class="csv" id="statPnl" style="color:var(--green)">$0.00</div><div class="csl">P&amp;L</div><div class="css2" id="statPnlPct">0.00%</div></div>
+    <div class="cp-stat"><div class="csv" id="statDaily" style="color:var(--amber)">$0.00</div><div class="csl">Daily Loss</div><div class="css2" id="statDailyLeft">—</div></div>
+    <div class="cp-stat"><div class="csv" id="statWins" style="color:var(--blue)">~8</div><div class="csl">Wins Needed</div><div class="css2" id="statLeft">$400 to go</div></div>
   </div>
-
   <div>
     <div class="prog-row">
-      <div class="prog-label">
-        <span class="pl-name">Profit Target (8%)</span>
-        <span class="pl-val" id="profitProgLabel" style="color:var(--green)">0.00% / 8%</span>
-      </div>
-      <div class="prog-track"><div class="prog-fill pf-profit" id="profitProgBar" style="width:0%"></div></div>
+      <div class="prog-label"><span class="pl-name">Profit Target 8%</span><span class="pl-val" id="profitPL" style="color:var(--green)">0.00% / 8%</span></div>
+      <div class="prog-track"><div class="prog-fill pf-p" id="profitPB" style="width:0%"></div></div>
     </div>
-    <div class="prog-row" style="margin-top:7px">
-      <div class="prog-label">
-        <span class="pl-name">Daily Loss Limit (4%)</span>
-        <span class="pl-val" id="dailyProgLabel" style="color:var(--amber)">0.00% / 4%</span>
-      </div>
-      <div class="prog-track"><div class="prog-fill pf-daily" id="dailyProgBar" style="width:0%"></div></div>
+    <div class="prog-row" style="margin-top:6px">
+      <div class="prog-label"><span class="pl-name">Daily Loss 4%</span><span class="pl-val" id="dailyPL" style="color:var(--amber)">0.00% / 4%</span></div>
+      <div class="prog-track"><div class="prog-fill pf-d" id="dailyPB" style="width:0%"></div></div>
     </div>
-    <div class="prog-row" style="margin-top:7px">
-      <div class="prog-label">
-        <span class="pl-name">Max Drawdown (8%)</span>
-        <span class="pl-val" id="totalProgLabel" style="color:var(--blue)">0.00% / 8%</span>
-      </div>
-      <div class="prog-track"><div class="prog-fill pf-total" id="totalProgBar" style="width:0%"></div></div>
+    <div class="prog-row" style="margin-top:6px">
+      <div class="prog-label"><span class="pl-name">Max Drawdown 8%</span><span class="pl-val" id="totalPL" style="color:var(--blue)">0.00% / 8%</span></div>
+      <div class="prog-track"><div class="prog-fill pf-t" id="totalPB" style="width:0%"></div></div>
     </div>
   </div>
-
-  <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
-    <div class="cp-stat" style="text-align:left;flex:1;min-width:100px">
-      <div class="csv" id="limitDailyAmt" style="color:var(--amber)">$200</div>
-      <div class="csl">Max Daily Loss</div>
-      <div class="css2" id="limitDailyLeft">$200 remaining</div>
-    </div>
-    <div class="cp-stat" style="text-align:left;flex:1;min-width:100px">
-      <div class="csv" id="limitTotalAmt" style="color:var(--red)">$400</div>
-      <div class="csl">Max Total Loss</div>
-      <div class="css2" id="limitTotalLeft">$400 remaining</div>
-    </div>
-    <div class="cp-stat" style="text-align:left;flex:1;min-width:100px">
-      <div class="csv" id="limitTarget" style="color:var(--green)">$400</div>
-      <div class="csl">Profit Target</div>
-      <div class="css2" id="limitTargetLeft">$400 to go</div>
-    </div>
+  <div style="display:flex;gap:6px;margin-top:9px;flex-wrap:wrap">
+    <div class="cp-stat" style="text-align:left;flex:1;min-width:90px"><div class="csv" id="lDA" style="color:var(--amber)">$200</div><div class="csl">Max Daily Loss</div><div class="css2" id="lDL">$200 left</div></div>
+    <div class="cp-stat" style="text-align:left;flex:1;min-width:90px"><div class="csv" id="lTA" style="color:var(--red)">$400</div><div class="csl">Max Total Loss</div><div class="css2" id="lTL">$400 left</div></div>
+    <div class="cp-stat" style="text-align:left;flex:1;min-width:90px"><div class="csv" id="lTG" style="color:var(--green)">$400</div><div class="csl">Profit Target</div><div class="css2" id="lTGS">$400 to go</div></div>
   </div>
 </div>
 
-<!-- ── RISK SETTINGS ── -->
+<!-- ══════════════════════════════════
+     RISK SETTINGS
+══════════════════════════════════ -->
 <div class="card">
   <div class="card-title"><span class="ct-icon">⚙</span> Risk Settings</div>
   <div class="risk-row">
@@ -300,50 +475,21 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
     <div class="risk-val" id="riskSliderVal">0.5%</div>
   </div>
   <div style="display:flex;gap:8px;margin-top:9px">
-    <div class="ig" style="flex:1">
-      <label>Risk %</label>
-      <div class="inp-wrap"><span class="pfx">%</span>
-        <input type="number" id="riskPct" value="0.5" min="0.1" max="10" step="0.1">
-      </div>
-    </div>
-    <div class="ig" style="flex:1">
-      <label>Risk $ Amount</label>
-      <div class="inp-wrap"><span class="pfx">$</span>
-        <input type="number" id="riskAmt" value="25" min="0.5" step="0.5">
-      </div>
-    </div>
+    <div class="ig" style="flex:1"><label>Risk %</label><div class="inp-wrap"><span class="pfx">%</span><input type="number" id="riskPct" value="0.5" min="0.1" max="10" step="0.1"></div></div>
+    <div class="ig" style="flex:1"><label>Risk $</label><div class="inp-wrap"><span class="pfx">$</span><input type="number" id="riskAmt" value="25" min="0.5" step="0.5"></div></div>
   </div>
 </div>
 
-<!-- ── TRADE SETUP ── -->
+<!-- ══════════════════════════════════
+     TRADE SETUP
+══════════════════════════════════ -->
 <div class="card">
-  <div class="card-title"><span class="ct-icon">📊</span> Trade Setup</div>
+  <div class="card-title"><span class="ct-icon">📊</span> Trade Setup — <span id="activeInstLabel" style="color:var(--gold)">XAUUSD</span></div>
   <div class="input-grid">
-    <div class="ig">
-      <label>Entry Price <span class="req">*</span></label>
-      <div class="inp-wrap"><span class="pfx">$</span>
-        <input type="number" id="entryPrice" placeholder="3310.50" step="0.01">
-      </div>
-    </div>
-    <div class="ig">
-      <label>Lot Size <span style="color:var(--muted)">(opt)</span></label>
-      <div class="inp-wrap"><span class="pfx">⬡</span>
-        <input type="number" id="lotSize" placeholder="Auto" step="0.01" min="0.01">
-      </div>
-      <div class="inp-hint">Leave blank = auto-calc</div>
-    </div>
-    <div class="ig">
-      <label>Stop Loss <span class="req">*</span></label>
-      <div class="inp-wrap"><span class="pfx">$</span>
-        <input type="number" id="stopLoss" placeholder="3305.00" step="0.01">
-      </div>
-    </div>
-    <div class="ig">
-      <label>Take Profit <span class="req">*</span></label>
-      <div class="inp-wrap"><span class="pfx">$</span>
-        <input type="number" id="takeProfit" placeholder="3325.00" step="0.01">
-      </div>
-    </div>
+    <div class="ig"><label>Entry Price <span class="req">*</span></label><div class="inp-wrap"><span class="pfx">$</span><input type="number" id="entryPrice" placeholder="3310.50" step="any"></div></div>
+    <div class="ig"><label>Lot Size <span style="color:var(--muted)">(opt)</span></label><div class="inp-wrap"><span class="pfx">⬡</span><input type="number" id="lotSize" placeholder="Auto" step="0.01" min="0.01"></div><div class="inp-hint">Leave blank = auto</div></div>
+    <div class="ig"><label>Stop Loss <span class="req">*</span></label><div class="inp-wrap"><span class="pfx">$</span><input type="number" id="stopLoss" placeholder="3305.00" step="any"></div></div>
+    <div class="ig"><label>Take Profit <span class="req">*</span></label><div class="inp-wrap"><span class="pfx">$</span><input type="number" id="takeProfit" placeholder="3325.00" step="any"></div></div>
   </div>
   <div class="btn-row">
     <button class="btn btn-gold" onclick="calculate()">⚡ Calculate</button>
@@ -352,148 +498,117 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
   </div>
 </div>
 
-<!-- ── AI ADVISOR ── -->
+<!-- ══════════════════════════════════
+     AI ADVISOR
+══════════════════════════════════ -->
 <div class="advisor-panel">
-  <div class="advisor-title">
-    <span class="ai-dot"></span>
-    <span>AI Lot Advisor — Pass This Challenge</span>
-  </div>
+  <div class="advisor-title"><span class="ai-dot"></span> AI Lot Advisor — Pass This Challenge</div>
   <div class="adv-lot-grid">
     <div class="adv-lot" id="adv-cons" onclick="applyLot('cons')">
-      <div class="al-name">Conservative</div>
-      <div class="al-val" id="advVal-cons">—</div>
-      <div class="al-sub" id="advSub-cons">—</div>
+      <div class="al-name">Conservative</div><div class="al-val" id="av-cons">—</div>
+      <div class="al-sub" id="as-cons">—</div>
       <div class="al-badge" style="background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,.3)">SAFE</div>
     </div>
     <div class="adv-lot recommended" id="adv-opt" onclick="applyLot('opt')">
-      <div class="al-name">✦ Optimal</div>
-      <div class="al-val" id="advVal-opt">—</div>
-      <div class="al-sub" id="advSub-opt">—</div>
+      <div class="al-name">✦ Optimal</div><div class="al-val" id="av-opt">—</div>
+      <div class="al-sub" id="as-opt">—</div>
       <div class="al-badge" style="background:var(--gold-dim);color:var(--gold);border:1px solid rgba(240,180,41,.3)">RECOMMENDED</div>
     </div>
     <div class="adv-lot" id="adv-agg" onclick="applyLot('agg')">
-      <div class="al-name">Aggressive</div>
-      <div class="al-val" id="advVal-agg">—</div>
-      <div class="al-sub" id="advSub-agg">—</div>
+      <div class="al-name">Aggressive</div><div class="al-val" id="av-agg">—</div>
+      <div class="al-sub" id="as-agg">—</div>
       <div class="al-badge" style="background:var(--amber-dim);color:var(--amber);border:1px solid rgba(245,158,11,.3)">CAUTION</div>
     </div>
   </div>
-  <div class="adv-tip" id="advTip">💡 Enter your trade details above to get intelligent lot size recommendations tailored to your challenge progress.</div>
+  <div class="adv-tip" id="advTip">💡 Select an instrument and enter trade details to get intelligent lot size recommendations.</div>
 </div>
 
-<!-- ── RESULTS ── -->
+<!-- ══════════════════════════════════
+     RESULTS
+══════════════════════════════════ -->
 <div class="card">
   <div class="badge-row">
     <div id="tradeBadge" class="none">— WAITING —</div>
     <div id="statusBadge" class="idle">● IDLE</div>
   </div>
   <div class="results-grid">
-    <div class="rbox" id="rb-loss">
-      <div class="rl">💸 Max Loss</div>
-      <div class="rv" id="lossUSD">—</div>
-      <div class="rs" id="lossSub">—</div>
-    </div>
-    <div class="rbox" id="rb-profit">
-      <div class="rl">💰 Max Profit</div>
-      <div class="rv" id="profitUSD">—</div>
-      <div class="rs" id="profitSub">—</div>
-    </div>
-    <div class="rbox" id="rb-lot">
-      <div class="rl">📦 Auto Lot</div>
-      <div class="rv" id="autoLot">—</div>
-      <div class="rs" id="autoLotSub">—</div>
-    </div>
-    <div class="rbox" id="rb-safe">
-      <div class="rl">🛡 Safe Cap Lot</div>
-      <div class="rv" id="safeLot">—</div>
-      <div class="rs">Max 0.15 lots</div>
-    </div>
-    <div class="rbox" id="rb-risk">
-      <div class="rl">⚠ Risk Used</div>
-      <div class="rv" id="riskUsed">—</div>
-      <div class="rs" id="riskUsedSub">—</div>
-    </div>
-    <div class="rbox" id="rb-rr">
-      <div class="rl">📐 R:R Ratio</div>
-      <div class="rv" id="rrRatio">—</div>
-      <div class="rs" id="rrSub">—</div>
-    </div>
+    <div class="rbox" id="rb-loss"><div class="rl">💸 Max Loss</div><div class="rv" id="lossUSD">—</div><div class="rs" id="lossSub">—</div></div>
+    <div class="rbox" id="rb-profit"><div class="rl">💰 Max Profit</div><div class="rv" id="profitUSD">—</div><div class="rs" id="profitSub">—</div></div>
+    <div class="rbox" id="rb-lot"><div class="rl">📦 Auto Lot</div><div class="rv" id="autoLot">—</div><div class="rs" id="autoLotSub">—</div></div>
+    <div class="rbox" id="rb-safe"><div class="rl">🛡 Safe Cap</div><div class="rv" id="safeLot">—</div><div class="rs" id="safeLotSub">—</div></div>
+    <div class="rbox" id="rb-risk"><div class="rl">⚠ Risk Used</div><div class="rv" id="riskUsed">—</div><div class="rs" id="riskUsedSub">—</div></div>
+    <div class="rbox" id="rb-rr"><div class="rl">📐 R:R Ratio</div><div class="rv" id="rrRatio">—</div><div class="rs" id="rrSub">—</div></div>
+  </div>
+
+  <!-- Instrument-specific breakdown -->
+  <div class="inst-calc-info" id="instCalcInfo" style="display:none">
+    <div class="ici-row"><span class="ici-lbl">Instrument</span><span class="ici-val go" id="iciInst">—</span></div>
+    <div class="ici-row"><span class="ici-lbl">SL Distance</span><span class="ici-val" id="iciSLdist">—</span></div>
+    <div class="ici-row"><span class="ici-lbl">TP Distance</span><span class="ici-val" id="iciTPdist">—</span></div>
+    <div class="ici-row"><span class="ici-lbl">Pip Value (0.01 lot)</span><span class="ici-val" id="iciPipVal">—</span></div>
+    <div class="ici-row"><span class="ici-lbl">Value per 0.01 lot (SL)</span><span class="ici-val r" id="iciValSL">—</span></div>
+    <div class="ici-row"><span class="ici-lbl">Value per 0.01 lot (TP)</span><span class="ici-val g" id="iciValTP">—</span></div>
+    <div class="ici-row"><span class="ici-lbl">Lot Formula</span><span class="ici-val" id="iciFormula">—</span></div>
   </div>
 
   <div class="pts-row">
-    <div class="pbox"><div class="pv" id="slPoints">—</div><div class="pl">SL Points</div></div>
-    <div class="pbox"><div class="pv" id="tpPoints">—</div><div class="pl">TP Points</div></div>
-    <div class="pbox"><div class="pv" id="slPips">—</div><div class="pl">SL Pips</div></div>
-    <div class="pbox"><div class="pv" id="tpPips">—</div><div class="pl">TP Pips</div></div>
+    <div class="pbox"><div class="pv" id="slPts">—</div><div class="pl" id="slPtsLbl">SL Pips</div></div>
+    <div class="pbox"><div class="pv" id="tpPts">—</div><div class="pl" id="tpPtsLbl">TP Pips</div></div>
+    <div class="pbox"><div class="pv" id="slDollar">—</div><div class="pl">SL $Move</div></div>
+    <div class="pbox"><div class="pv" id="tpDollar">—</div><div class="pl">TP $Move</div></div>
   </div>
 
   <div class="rr-wrap">
-    <div class="rr-head">
-      <span class="rh-l">Risk vs Reward</span>
-      <span class="rh-r" id="rrBarLabel">—</span>
-    </div>
-    <div class="rr-bar">
-      <div class="rr-risk" id="rrRiskBar" style="width:50%"></div>
-      <div class="rr-reward"></div>
-    </div>
-    <div class="rr-foot">
-      <span id="rrRiskLabel">RISK</span>
-      <span id="rrRewardLabel">REWARD</span>
-    </div>
+    <div class="rr-head"><span class="rh-l">Risk vs Reward</span><span class="rh-r" id="rrBarLbl">—</span></div>
+    <div class="rr-bar"><div class="rr-risk" id="rrRiskBar" style="width:50%"></div><div class="rr-reward"></div></div>
+    <div class="rr-foot"><span id="rrRL">RISK</span><span id="rrRwL">REWARD</span></div>
   </div>
-
-  <div class="rr-wrap" style="margin-top:9px">
-    <div class="rr-head">
-      <span class="rh-l">Challenge Safety Meter</span>
-      <span class="rh-r" id="safetyScore">—</span>
-    </div>
-    <div class="rr-bar" style="height:10px">
-      <div class="rr-risk" id="dangerBar" style="width:0%"></div>
-      <div class="rr-reward" style="background:var(--border2)"></div>
-    </div>
-    <div class="rr-foot"><span>SAFE</span><span>DANGER ZONE</span></div>
+  <div class="rr-wrap" style="margin-top:8px">
+    <div class="rr-head"><span class="rh-l">Challenge Safety Meter</span><span class="rh-r" id="safetyScore">—</span></div>
+    <div class="rr-bar" style="height:9px"><div class="rr-risk" id="dangerBar" style="width:0%"></div><div class="rr-reward" style="background:var(--border2)"></div></div>
+    <div class="rr-foot"><span>SAFE</span><span>DANGER</span></div>
   </div>
-
   <div id="warningsBox"></div>
 </div>
 
-<!-- ── PIP GUIDE ── -->
+<!-- Pip Reference -->
 <div class="card">
-  <button class="col-btn" onclick="toggleCol('pipGuide',this)">
-    <span>⬡ XAUUSD Reference & Prop Rules</span><span class="arr">▼</span>
-  </button>
+  <button class="col-btn" onclick="toggleCol('pipGuide',this)"><span>⬡ Instrument Pip Reference</span><span class="arr">▼</span></button>
   <div class="collapsible" id="pipGuide" style="max-height:0">
-    <div class="pip-guide">
-      <div><span class="ph">0.01 lot</span> <span class="pv2">= $1.00/point · $0.10/pip</span></div>
-      <div><span class="ph">0.05 lot</span> <span class="pv2">= $5.00/point · $0.50/pip</span></div>
-      <div><span class="ph">0.10 lot</span> <span class="pv2">= $10.00/point · $1.00/pip</span></div>
-      <div><span class="ph">0.15 lot</span> <span class="pv2">= $15.00/point (SAFE CAP)</span></div>
-      <div><span class="ph">Formula</span> <span class="pv2">Lot = Risk$ ÷ (SL_dist × 100)</span></div>
-      <div style="margin-top:6px;border-top:1px solid var(--border2);padding-top:6px">
-        <div><span class="ph">Daily Loss</span> <span class="pv2">Max 4% of starting balance</span></div>
-        <div><span class="ph">Max Loss</span>  <span class="pv2">Max 8% of starting balance (total)</span></div>
-        <div><span class="ph">Target</span>    <span class="pv2">+8% profit without violating rules</span></div>
-      </div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:11px;font-family:var(--mono);font-size:11px;color:var(--muted);line-height:2;margin-top:10px">
+      <div style="color:var(--gold);font-weight:700;margin-bottom:4px">METALS</div>
+      <div>XAUUSD: 0.01lot=$1/pt · pip=0.01 · formula: lot=Risk÷(SLdist×100)</div>
+      <div>XAGUSD: 0.01lot=$0.50/pt · pip=0.001</div>
+      <div style="color:var(--gold);font-weight:700;margin:6px 0 4px">FOREX (standard lot)</div>
+      <div>EURUSD/GBPUSD: 0.01lot=$1/pip · pip=0.0001</div>
+      <div>USDJPY/EURJPY: 0.01lot=$0.93/pip · pip=0.01</div>
+      <div>GBPJPY: 0.01lot=$0.93/pip · pip=0.01</div>
+      <div>AUDUSD/NZDUSD: 0.01lot=$1/pip · pip=0.0001</div>
+      <div style="color:var(--gold);font-weight:700;margin:6px 0 4px">CRYPTO</div>
+      <div>BTCUSD: 0.01lot=$0.10/USD · pip=1.00</div>
+      <div>ETHUSD: 0.01lot=$0.10/USD · pip=0.01</div>
+      <div>XRPUSD: 0.01lot=$1.00/pip · pip=0.0001</div>
+      <div style="color:var(--gold);font-weight:700;margin:6px 0 4px">INDICES</div>
+      <div>US30/NAS100: 0.01lot=$0.01/pt · pip=1.00</div>
+      <div style="color:var(--gold);font-weight:700;margin:6px 0 4px">PROP RULES (Maven)</div>
+      <div>Daily Loss Max: 4% · Max Drawdown: 8% · Target: 8%</div>
+      <div>News Rule: No trading 30min before/after high-impact events</div>
     </div>
   </div>
 </div>
 
-<!-- ── TRADE LOG ── -->
+<!-- Trade Log -->
 <div class="card">
-  <button class="col-btn open" onclick="toggleCol('tradeLog',this)">
-    <span>📋 Session Trade Log</span><span class="arr" style="transform:rotate(180deg)">▼</span>
-  </button>
+  <button class="col-btn open" onclick="toggleCol('tradeLog',this)"><span>📋 Session Trade Log</span><span class="arr" style="transform:rotate(180deg)">▼</span></button>
   <div class="collapsible" id="tradeLog" style="max-height:2000px">
-    <div style="margin-top:12px">
+    <div style="margin-top:11px">
       <div class="log-stats">
         <div class="lstat"><div class="lsv" id="logCount" style="color:var(--gold)">0</div><div class="lsl">Trades</div></div>
         <div class="lstat"><div class="lsv" id="logAvgRR" style="color:var(--blue)">—</div><div class="lsl">Avg R:R</div></div>
-        <div class="lstat"><div class="lsv" id="logTotalRisk" style="color:var(--amber)">$0</div><div class="lsl">Total Risk</div></div>
+        <div class="lstat"><div class="lsv" id="logTotRisk" style="color:var(--amber)">$0</div><div class="lsl">Total Risk</div></div>
         <div class="lstat"><div class="lsv" id="logAvgLot" style="color:var(--green)">—</div><div class="lsl">Avg Lot</div></div>
       </div>
-      <div class="log-list" id="logList">
-        <div class="log-empty">No trades logged yet.</div>
-      </div>
+      <div class="log-list" id="logList"><div class="log-empty">No trades yet.</div></div>
       <div class="btn-row">
         <button class="btn btn-gold" onclick="addToLog()">+ Add to Log</button>
         <button class="btn btn-outline" onclick="clearLog()">Clear Log</button>
@@ -502,395 +617,622 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
   </div>
 </div>
 
-</div>
+</div><!-- /wrap -->
 <script>
+// ═══════════════════════════════════════════════
+//  INSTRUMENT DATABASE
+//  pipVal: $ per pip per 0.01 lot
+//  pipSize: price distance = 1 pip
+//  maxSafeLot: absolute cap for this instrument
+//  lotStep: minimum increment
+// ═══════════════════════════════════════════════
+const INSTRUMENTS = {
+  // ── Metals ──
+  XAUUSD:  {name:'XAUUSD', emoji:'🥇', cat:'metals', pipVal:1.00,  pipSize:0.01,   maxSafeLot:0.15, lotStep:0.01, note:'Gold vs USD'},
+  XAGUSD:  {name:'XAGUSD', emoji:'🥈', cat:'metals', pipVal:0.50,  pipSize:0.001,  maxSafeLot:0.20, lotStep:0.01, note:'Silver vs USD'},
+  XPTUSD:  {name:'XPTUSD', emoji:'🔘', cat:'metals', pipVal:1.00,  pipSize:0.01,   maxSafeLot:0.15, lotStep:0.01, note:'Platinum vs USD'},
+  // ── Forex Major ──
+  EURUSD:  {name:'EURUSD', emoji:'🇪🇺', cat:'forex',  pipVal:1.00,  pipSize:0.0001, maxSafeLot:0.50, lotStep:0.01, note:'Euro vs Dollar'},
+  GBPUSD:  {name:'GBPUSD', emoji:'🇬🇧', cat:'forex',  pipVal:1.00,  pipSize:0.0001, maxSafeLot:0.50, lotStep:0.01, note:'Pound vs Dollar'},
+  USDJPY:  {name:'USDJPY', emoji:'🇯🇵', cat:'forex',  pipVal:0.93,  pipSize:0.01,   maxSafeLot:0.50, lotStep:0.01, note:'Dollar vs Yen'},
+  USDCHF:  {name:'USDCHF', emoji:'🇨🇭', cat:'forex',  pipVal:1.13,  pipSize:0.0001, maxSafeLot:0.50, lotStep:0.01, note:'Dollar vs Franc'},
+  AUDUSD:  {name:'AUDUSD', emoji:'🇦🇺', cat:'forex',  pipVal:1.00,  pipSize:0.0001, maxSafeLot:0.50, lotStep:0.01, note:'AUD vs Dollar'},
+  NZDUSD:  {name:'NZDUSD', emoji:'🇳🇿', cat:'forex',  pipVal:1.00,  pipSize:0.0001, maxSafeLot:0.50, lotStep:0.01, note:'NZD vs Dollar'},
+  USDCAD:  {name:'USDCAD', emoji:'🇨🇦', cat:'forex',  pipVal:0.74,  pipSize:0.0001, maxSafeLot:0.50, lotStep:0.01, note:'Dollar vs CAD'},
+  GBPJPY:  {name:'GBPJPY', emoji:'🎌', cat:'forex',  pipVal:0.93,  pipSize:0.01,   maxSafeLot:0.30, lotStep:0.01, note:'Pound vs Yen'},
+  EURJPY:  {name:'EURJPY', emoji:'🗾', cat:'forex',  pipVal:0.93,  pipSize:0.01,   maxSafeLot:0.30, lotStep:0.01, note:'Euro vs Yen'},
+  EURGBP:  {name:'EURGBP', emoji:'🇪🇺', cat:'forex',  pipVal:1.27,  pipSize:0.0001, maxSafeLot:0.50, lotStep:0.01, note:'Euro vs GBP'},
+  // ── Crypto ──
+  BTCUSD:  {name:'BTCUSD', emoji:'₿',  cat:'crypto', pipVal:0.10,  pipSize:1.00,   maxSafeLot:0.05, lotStep:0.01, note:'Bitcoin vs USD'},
+  ETHUSD:  {name:'ETHUSD', emoji:'Ξ',  cat:'crypto', pipVal:0.10,  pipSize:0.01,   maxSafeLot:0.10, lotStep:0.01, note:'Ethereum vs USD'},
+  XRPUSD:  {name:'XRPUSD', emoji:'✕',  cat:'crypto', pipVal:1.00,  pipSize:0.0001, maxSafeLot:0.50, lotStep:0.01, note:'XRP vs USD'},
+  LTCUSD:  {name:'LTCUSD', emoji:'Ł',  cat:'crypto', pipVal:0.10,  pipSize:0.01,   maxSafeLot:0.20, lotStep:0.01, note:'Litecoin vs USD'},
+  SOLUSD:  {name:'SOLUSD', emoji:'◎',  cat:'crypto', pipVal:0.10,  pipSize:0.01,   maxSafeLot:0.20, lotStep:0.01, note:'Solana vs USD'},
+  BNBUSD:  {name:'BNBUSD', emoji:'🔸', cat:'crypto', pipVal:0.10,  pipSize:0.01,   maxSafeLot:0.20, lotStep:0.01, note:'BNB vs USD'},
+  // ── Indices ──
+  US30:    {name:'US30',   emoji:'🏛', cat:'indices', pipVal:0.01,  pipSize:1.00,   maxSafeLot:1.00, lotStep:0.01, note:'Dow Jones 30'},
+  NAS100:  {name:'NAS100', emoji:'💻', cat:'indices', pipVal:0.01,  pipSize:1.00,   maxSafeLot:0.50, lotStep:0.01, note:'Nasdaq 100'},
+  SPX500:  {name:'SPX500', emoji:'📊', cat:'indices', pipVal:0.01,  pipSize:1.00,   maxSafeLot:1.00, lotStep:0.01, note:'S&P 500'},
+  GER40:   {name:'GER40',  emoji:'🇩🇪', cat:'indices', pipVal:0.01,  pipSize:1.00,   maxSafeLot:1.00, lotStep:0.01, note:'DAX 40'},
+};
+
+// ═══════════════════════════════════════════════
+//  NEWS CALENDAR 2026
+// ═══════════════════════════════════════════════
+const NEWS = [
+  {d:'2026-01-09',t:'08:30',n:'NFP',imp:'high'},{d:'2026-01-13',t:'08:30',n:'CPI',imp:'high'},
+  {d:'2026-01-14',t:'08:30',n:'PPI',imp:'medium'},{d:'2026-01-28',t:'14:00',n:'FOMC Decision',imp:'high'},
+  {d:'2026-02-06',t:'08:30',n:'NFP',imp:'high'},{d:'2026-02-11',t:'08:30',n:'CPI',imp:'high'},
+  {d:'2026-02-27',t:'08:30',n:'PPI',imp:'medium'},
+  {d:'2026-03-06',t:'08:30',n:'NFP',imp:'high'},{d:'2026-03-11',t:'08:30',n:'CPI',imp:'high'},
+  {d:'2026-03-12',t:'08:30',n:'PPI',imp:'medium'},{d:'2026-03-18',t:'14:00',n:'FOMC Decision',imp:'high'},
+  {d:'2026-04-03',t:'08:30',n:'NFP',imp:'high'},{d:'2026-04-10',t:'08:30',n:'CPI',imp:'high'},
+  {d:'2026-04-14',t:'08:30',n:'PPI',imp:'medium'},{d:'2026-04-29',t:'14:00',n:'FOMC Decision',imp:'high'},
+  {d:'2026-05-08',t:'08:30',n:'NFP',imp:'high'},{d:'2026-05-12',t:'08:30',n:'CPI',imp:'high'},
+  {d:'2026-05-13',t:'08:30',n:'PPI',imp:'medium'},
+  {d:'2026-06-05',t:'08:30',n:'NFP',imp:'high'},{d:'2026-06-10',t:'08:30',n:'CPI',imp:'high'},
+  {d:'2026-06-11',t:'08:30',n:'PPI',imp:'medium'},{d:'2026-06-17',t:'14:00',n:'FOMC + Projections',imp:'high'},
+  {d:'2026-07-02',t:'08:30',n:'NFP',imp:'high'},{d:'2026-07-14',t:'08:30',n:'CPI',imp:'high'},
+  {d:'2026-07-15',t:'08:30',n:'PPI',imp:'medium'},{d:'2026-07-29',t:'14:00',n:'FOMC Decision',imp:'high'},
+  {d:'2026-08-07',t:'08:30',n:'NFP',imp:'high'},{d:'2026-08-12',t:'08:30',n:'CPI',imp:'high'},
+  {d:'2026-08-13',t:'08:30',n:'PPI',imp:'medium'},
+  {d:'2026-09-04',t:'08:30',n:'NFP',imp:'high'},{d:'2026-09-11',t:'08:30',n:'CPI',imp:'high'},
+  {d:'2026-09-10',t:'08:30',n:'PPI',imp:'medium'},{d:'2026-09-16',t:'14:00',n:'FOMC + Projections',imp:'high'},
+  {d:'2026-10-02',t:'08:30',n:'NFP',imp:'high'},{d:'2026-10-14',t:'08:30',n:'CPI',imp:'high'},
+  {d:'2026-10-15',t:'08:30',n:'PPI',imp:'medium'},{d:'2026-10-28',t:'14:00',n:'FOMC Decision',imp:'high'},
+  {d:'2026-11-06',t:'08:30',n:'NFP',imp:'high'},{d:'2026-11-10',t:'08:30',n:'CPI',imp:'high'},
+  {d:'2026-11-13',t:'08:30',n:'PPI',imp:'medium'},
+  {d:'2026-12-04',t:'08:30',n:'NFP',imp:'high'},{d:'2026-12-09',t:'14:00',n:'FOMC + Projections',imp:'high'},
+  {d:'2026-12-10',t:'08:30',n:'CPI',imp:'high'},{d:'2026-12-15',t:'08:30',n:'PPI',imp:'medium'},
+];
+
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
 const $ = id => document.getElementById(id);
-let currentCalc = null, tradeLog = [], logCounter = 0;
-const RULES = { dailyLossPct:4, maxLossPct:8, targetPct:8 };
+let currentCalc=null, tradeLog=[], logCounter=0, cdInterval=null;
+let activeInst = INSTRUMENTS.XAUUSD;
+let currentCat = 'metals';
 window._advLots = {};
+const RULES={daily:4,max:8,target:8};
 
-const getStartBal    = () => parseFloat($('startBal').value)    || 5000;
-const getCurrentBal  = () => parseFloat($('currentBal').value)  || getStartBal();
-const getDayStartBal = () => parseFloat($('dayStartBal').value) || getCurrentBal();
-const getRiskPct     = () => parseFloat($('riskPct').value)     || 0.5;
-const getRiskAmt     = () => parseFloat($('riskAmt').value)     || 25;
-const fmt            = n  => parseFloat(n).toFixed(2);
-
-function setAccount(val, btn) {
-  $('startBal').value    = val;
-  $('currentBal').value  = val;
-  $('dayStartBal').value = val;
-  document.querySelectorAll('.pbtn').forEach(b => b.classList.remove('active'));
+// ═══════════════════════════════════════════════
+//  INSTRUMENT SELECTOR
+// ═══════════════════════════════════════════════
+function filterCat(cat, btn){
+  currentCat = cat;
+  document.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  syncRiskFromPct();
-  updateChallenge();
+  $('customInstBox').style.display = cat==='custom' ? 'block' : 'none';
+  buildInstGrid(cat);
 }
 
-function syncSlider() {
-  const v = parseFloat($('riskSlider').value);
-  $('riskSliderVal').textContent = v.toFixed(1) + '%';
-  $('riskPct').value = v;
-  syncRiskFromPct();
+function buildInstGrid(cat){
+  const grid = $('instGrid');
+  if(cat==='custom'){ grid.innerHTML=''; return; }
+  const items = Object.values(INSTRUMENTS).filter(i=>i.cat===cat);
+  grid.innerHTML = items.map(i=>`
+    <div class="inst-btn${activeInst.name===i.name?' active':''}" onclick="selectInst('${i.name}')" title="${i.note}">
+      <div class="ib-emoji">${i.emoji}</div>
+      <div class="ib-name">${i.name}</div>
+      <div class="ib-type">${i.cat}</div>
+    </div>`).join('');
 }
 
-function syncRiskFromPct() {
-  const acc = getStartBal(), pct = getRiskPct();
-  $('riskAmt').value = (acc * pct / 100).toFixed(2);
-  $('riskSlider').value = Math.min(pct, 4);
-  $('riskSliderVal').textContent = Math.min(pct, 4).toFixed(1) + '%';
+function selectInst(name){
+  activeInst = INSTRUMENTS[name];
+  document.querySelectorAll('.inst-btn').forEach(b=>b.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  updateInstInfo();
   calculate();
 }
 
-function syncRiskFromAmt() {
-  const acc = getStartBal(), amt = parseFloat($('riskAmt').value) || 0;
-  const pct = (amt / acc) * 100;
-  $('riskPct').value = pct.toFixed(3);
-  $('riskSlider').value = Math.min(pct, 4);
-  $('riskSliderVal').textContent = Math.min(pct, 4).toFixed(1) + '%';
+function applyCustom(){
+  const sym = $('custSymbol').value.trim().toUpperCase() || 'CUSTOM';
+  const pv  = parseFloat($('custPipVal').value)  || 1.00;
+  const ps  = parseFloat($('custPipSize').value) || 0.0001;
+  activeInst = {name:sym,emoji:'⚙',cat:'custom',pipVal:pv,pipSize:ps,maxSafeLot:0.50,lotStep:0.01,note:'Custom'};
+  updateInstInfo();
   calculate();
 }
 
-function updateChallenge() {
-  const start    = getStartBal();
-  const current  = getCurrentBal();
-  const dayStart = getDayStartBal();
-
-  const dailyLossLimit = start * RULES.dailyLossPct / 100;
-  const maxLossLimit   = start * RULES.maxLossPct   / 100;
-  const profitTarget   = start * RULES.targetPct    / 100;
-
-  const totalPnl     = current - start;
-  const totalPnlPct  = (totalPnl / start) * 100;
-  const dailyLoss    = Math.max(0, dayStart - current);
-  const dailyLossPct = (dailyLoss / start) * 100;
-  const totalLoss    = Math.max(0, start - current);
-  const totalLossPct = (totalLoss / start) * 100;
-  const profitPct    = Math.max(0, totalPnlPct);
-
-  const accountLabels = { 5000:'5K CHALLENGE', 10000:'10K CHALLENGE', 25000:'25K CHALLENGE', 50000:'50K CHALLENGE' };
-  $('firmLabel').textContent = accountLabels[start] || (start >= 50000 ? '50K CHALLENGE' : start >= 25000 ? '25K CHALLENGE' : start >= 10000 ? '10K CHALLENGE' : '5K CHALLENGE');
-
-  $('statPnl').textContent     = (totalPnl >= 0 ? '+$' : '-$') + Math.abs(totalPnl).toFixed(2);
-  $('statPnl').style.color     = totalPnl >= 0 ? 'var(--green)' : 'var(--red)';
-  $('statPnlPct').textContent  = (totalPnlPct >= 0 ? '+' : '') + totalPnlPct.toFixed(2) + '%';
-  $('statDailyUsed').textContent = '-$' + dailyLoss.toFixed(2);
-  $('statDailyLeft').textContent = '$' + Math.max(0, dailyLossLimit - dailyLoss).toFixed(2) + ' left';
-
-  const riskPerTrade = getRiskAmt();
-  const remaining    = Math.max(0, profitTarget - Math.max(0, totalPnl));
-  if (remaining <= 0) {
-    $('statTradesNeeded').textContent = '✓ DONE'; $('statTradesNeeded').style.color = 'var(--green)';
-    $('statTargetLeft').textContent = 'Target reached!';
-  } else {
-    const avgWin = riskPerTrade * 2;
-    $('statTradesNeeded').textContent = '~' + Math.ceil(remaining / avgWin) + ' wins';
-    $('statTradesNeeded').style.color = 'var(--blue)';
-    $('statTargetLeft').textContent = '$' + remaining.toFixed(2) + ' to go';
+function updateInstInfo(){
+  const i = activeInst;
+  $('iiBadge').textContent  = i.name;
+  $('iiPipVal').textContent  = '$'+i.pipVal.toFixed(3);
+  $('iiPipSize').textContent = i.pipSize;
+  $('iiMaxLot').textContent  = i.maxSafeLot;
+  $('iiCat').textContent     = i.cat.charAt(0).toUpperCase()+i.cat.slice(1);
+  $('iiFormula').textContent = 'lot = Risk$ ÷ (SL_dist ÷ pipSize × pipVal × 100)';
+  $('activeInstLabel').textContent = i.name;
+  // Update placeholder tips
+  if(i.cat==='metals'){
+    $('entryPrice').placeholder='3310.50';
+    $('stopLoss').placeholder='3305.00';
+    $('takeProfit').placeholder='3325.00';
+  } else if(i.cat==='forex'){
+    const isJpy = i.name.includes('JPY');
+    $('entryPrice').placeholder = isJpy?'154.500':'1.08500';
+    $('stopLoss').placeholder   = isJpy?'154.200':'1.08200';
+    $('takeProfit').placeholder = isJpy?'155.100':'1.09100';
+  } else if(i.cat==='crypto'){
+    const isBtc = i.name==='BTCUSD';
+    $('entryPrice').placeholder = isBtc?'95000':'2500';
+    $('stopLoss').placeholder   = isBtc?'93000':'2400';
+    $('takeProfit').placeholder = isBtc?'99000':'2700';
+  } else if(i.cat==='indices'){
+    $('entryPrice').placeholder='42500';
+    $('stopLoss').placeholder='42200';
+    $('takeProfit').placeholder='43200';
   }
+}
 
-  $('profitProgBar').style.width    = Math.min((profitPct / RULES.targetPct) * 100, 100) + '%';
-  $('profitProgLabel').textContent  = profitPct.toFixed(2) + '% / 8%';
-  $('profitProgLabel').style.color  = profitPct >= 8 ? 'var(--gold)' : 'var(--green)';
+// ═══════════════════════════════════════════════
+//  LOT CALCULATION ENGINE (Universal)
+//  For 0.01 lot: $ per pip = pipVal
+//  pips = priceDist / pipSize
+//  $ per 0.01 lot = pips * pipVal
+//  lot = riskAmt / (pips * pipVal * 100)
+//     = riskAmt / (priceDist / pipSize * pipVal * 100)
+// ═══════════════════════════════════════════════
+function calcLotFromRisk(riskAmt, priceDist, inst){
+  if(priceDist===0) return 0;
+  const pips    = priceDist / inst.pipSize;
+  const dollarPerStandardLot = pips * inst.pipVal * 100; // for 1.00 lot
+  const lot = riskAmt / dollarPerStandardLot;
+  return Math.max(inst.lotStep, parseFloat(lot.toFixed(2)));
+}
 
-  const df = Math.min((dailyLossPct / RULES.dailyLossPct) * 100, 100);
-  $('dailyProgBar').style.width   = df + '%';
-  $('dailyProgLabel').textContent = dailyLossPct.toFixed(2) + '% / 4%';
-  $('dailyProgLabel').style.color = df > 75 ? 'var(--red)' : 'var(--amber)';
+function calcPnL(lot, priceDist, inst){
+  const pips = priceDist / inst.pipSize;
+  return lot * pips * inst.pipVal * 100;
+}
 
-  const tf = Math.min((totalLossPct / RULES.maxLossPct) * 100, 100);
-  $('totalProgBar').style.width   = tf + '%';
-  $('totalProgLabel').textContent = totalLossPct.toFixed(2) + '% / 8%';
-  $('totalProgLabel').style.color = tf > 75 ? 'var(--red)' : 'var(--blue)';
-
-  $('limitDailyAmt').textContent   = '$' + dailyLossLimit.toFixed(0);
-  $('limitDailyLeft').textContent  = '$' + Math.max(0, dailyLossLimit - dailyLoss).toFixed(2) + ' remaining';
-  $('limitTotalAmt').textContent   = '$' + maxLossLimit.toFixed(0);
-  $('limitTotalLeft').textContent  = '$' + Math.max(0, maxLossLimit - totalLoss).toFixed(2) + ' remaining';
-  $('limitTarget').textContent     = '$' + profitTarget.toFixed(0);
-  $('limitTargetLeft').textContent = '$' + remaining.toFixed(2) + ' to go';
-
+// ═══════════════════════════════════════════════
+//  ACCOUNT / RISK
+// ═══════════════════════════════════════════════
+function setAccount(val,btn){
+  $('startBal').value=$('currentBal').value=$('dayStartBal').value=val;
+  document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  syncRiskFromPct(); updateChallenge();
+}
+function syncSlider(){
+  const v=parseFloat($('riskSlider').value);
+  $('riskSliderVal').textContent=v.toFixed(1)+'%';
+  $('riskPct').value=v;
+  syncRiskFromPct();
+}
+function syncRiskFromPct(){
+  const acc=+$('startBal').value||5000, pct=+$('riskPct').value||0.5;
+  $('riskAmt').value=(acc*pct/100).toFixed(2);
+  $('riskSlider').value=Math.min(pct,4);
+  $('riskSliderVal').textContent=Math.min(pct,4).toFixed(1)+'%';
+  calculate();
+}
+function syncRiskFromAmt(){
+  const acc=+$('startBal').value||5000, amt=+$('riskAmt').value||0;
+  const pct=(amt/acc)*100;
+  $('riskPct').value=pct.toFixed(3);
+  $('riskSlider').value=Math.min(pct,4);
+  $('riskSliderVal').textContent=Math.min(pct,4).toFixed(1)+'%';
   calculate();
 }
 
-function calculate() {
-  const entry     = parseFloat($('entryPrice').value);
-  const sl        = parseFloat($('stopLoss').value);
-  const tp        = parseFloat($('takeProfit').value);
-  const manualLot = parseFloat($('lotSize').value);
-  const start     = getStartBal();
-  const current   = getCurrentBal();
-  const dayStart  = getDayStartBal();
-  const riskAmt   = getRiskAmt();
+// ═══════════════════════════════════════════════
+//  CHALLENGE TRACKER
+// ═══════════════════════════════════════════════
+function updateChallenge(){
+  const start=+$('startBal').value||5000, cur=+$('currentBal').value||start, day=+$('dayStartBal').value||cur;
+  const dlLimit=start*RULES.daily/100, mlLimit=start*RULES.max/100, tgt=start*RULES.target/100;
+  const pnl=cur-start, pnlPct=(pnl/start)*100;
+  const dLoss=Math.max(0,day-cur), dLossPct=(dLoss/start)*100;
+  const tLoss=Math.max(0,start-cur), tLossPct=(tLoss/start)*100;
+  const profPct=Math.max(0,pnlPct);
+  $('firmLabel').textContent=start>=50000?'50K':start>=25000?'25K':start>=10000?'10K':'5K'+' CHALLENGE';
+  $('statPnl').textContent=(pnl>=0?'+$':'-$')+Math.abs(pnl).toFixed(2);
+  $('statPnl').style.color=pnl>=0?'var(--green)':'var(--red)';
+  $('statPnlPct').textContent=(pnlPct>=0?'+':'')+pnlPct.toFixed(2)+'%';
+  $('statDaily').textContent='-$'+dLoss.toFixed(2);
+  $('statDailyLeft').textContent='$'+Math.max(0,dlLimit-dLoss).toFixed(2)+' left';
+  const rem=Math.max(0,tgt-Math.max(0,pnl));
+  const avgWin=(+$('riskAmt').value||25)*2;
+  $('statWins').textContent='~'+Math.ceil(rem/avgWin);
+  $('statWins').style.color='var(--blue)';
+  $('statLeft').textContent='$'+rem.toFixed(2)+' to go';
+  $('profitPB').style.width=Math.min((profPct/RULES.target)*100,100)+'%';
+  $('profitPL').textContent=profPct.toFixed(2)+'% / 8%';
+  $('profitPL').style.color=profPct>=8?'var(--gold)':'var(--green)';
+  const df=Math.min((dLossPct/RULES.daily)*100,100);
+  $('dailyPB').style.width=df+'%'; $('dailyPL').textContent=dLossPct.toFixed(2)+'% / 4%';
+  $('dailyPL').style.color=df>75?'var(--red)':'var(--amber)';
+  const tf=Math.min((tLossPct/RULES.max)*100,100);
+  $('totalPB').style.width=tf+'%'; $('totalPL').textContent=tLossPct.toFixed(2)+'% / 8%';
+  $('totalPL').style.color=tf>75?'var(--red)':'var(--blue)';
+  $('lDA').textContent='$'+dlLimit.toFixed(0); $('lDL').textContent='$'+Math.max(0,dlLimit-dLoss).toFixed(2)+' left';
+  $('lTA').textContent='$'+mlLimit.toFixed(0); $('lTL').textContent='$'+Math.max(0,mlLimit-tLoss).toFixed(2)+' left';
+  $('lTG').textContent='$'+tgt.toFixed(0);     $('lTGS').textContent='$'+rem.toFixed(2)+' to go';
+  calculate();
+}
 
-  if (!entry || !sl || !tp || isNaN(entry) || isNaN(sl) || isNaN(tp) || sl === entry || tp === entry) return;
+// ═══════════════════════════════════════════════
+//  MAIN CALCULATION
+// ═══════════════════════════════════════════════
+function calculate(){
+  const entry=parseFloat($('entryPrice').value);
+  const sl=parseFloat($('stopLoss').value);
+  const tp=parseFloat($('takeProfit').value);
+  const manualLot=parseFloat($('lotSize').value);
+  if(!entry||!sl||!tp||isNaN(entry)||isNaN(sl)||isNaN(tp)||sl===entry||tp===entry) return;
 
-  const isBuy     = tp > entry;
-  const tradeType = isBuy ? 'BUY' : 'SELL';
-  const slValid   = isBuy ? sl < entry : sl > entry;
-  const slDist    = Math.abs(entry - sl);
-  const tpDist    = Math.abs(entry - tp);
-  if (slDist === 0) return;
+  const inst = activeInst;
+  const start=+$('startBal').value||5000;
+  const cur=+$('currentBal').value||start;
+  const day=+$('dayStartBal').value||cur;
+  const riskAmt=+$('riskAmt').value||25;
 
-  // XAUUSD: 0.01 lot = $1/point → lot = riskAmt / (slDist * 100)
-  const autoLotRaw = riskAmt / (slDist * 100);
-  const autoLot    = Math.max(0.01, parseFloat(autoLotRaw.toFixed(2)));
-  const safeLotVal = Math.min(autoLot, 0.15);
-  const usedLot    = (!isNaN(manualLot) && manualLot > 0) ? manualLot : autoLot;
+  const isBuy=tp>entry, tradeType=isBuy?'BUY':'SELL';
+  const slValid=isBuy?sl<entry:sl>entry;
+  const slDist=Math.abs(entry-sl), tpDist=Math.abs(entry-tp);
+  if(slDist===0) return;
 
-  const lossUSD     = usedLot * slDist * 100;
-  const profitUSD   = usedLot * tpDist * 100;
-  const riskUsedPct = (lossUSD / start) * 100;
-  const rr          = tpDist / slDist;
-  const slPips      = (slDist * 10).toFixed(1);
-  const tpPips      = (tpDist * 10).toFixed(1);
+  const slPips = slDist/inst.pipSize;
+  const tpPips = tpDist/inst.pipSize;
 
-  const dailyLossLimit  = start * RULES.dailyLossPct / 100;
-  const maxLossLimit    = start * RULES.maxLossPct   / 100;
-  const dailyLossUsed   = Math.max(0, dayStart - current);
-  const totalLossUsed   = Math.max(0, start - current);
-  const dailyRemaining  = Math.max(0, dailyLossLimit - dailyLossUsed);
-  const totalRemaining  = Math.max(0, maxLossLimit - totalLossUsed);
-  const maxSafeLotChallenge = Math.max(0.01, Math.min(dailyRemaining / (slDist * 100), totalRemaining / (slDist * 100), 0.20));
+  const autoLot = Math.min(calcLotFromRisk(riskAmt,slDist,inst), inst.maxSafeLot*2);
+  const safeLotVal = Math.min(autoLot, inst.maxSafeLot);
+  const usedLot = (!isNaN(manualLot)&&manualLot>0) ? manualLot : autoLot;
 
-  currentCalc = {
-    tradeType, entry, sl, tp, slDist, tpDist, autoLot, safeLotVal, usedLot,
-    lossUSD, profitUSD, riskUsedPct, rr, slPips, tpPips,
-    start, current, dayStart, riskAmt,
-    dailyLossLimit, maxLossLimit, dailyLossUsed, totalLossUsed,
-    dailyRemaining, totalRemaining, maxSafeLotChallenge, slValid
-  };
+  const lossUSD   = calcPnL(usedLot, slDist, inst);
+  const profitUSD = calcPnL(usedLot, tpDist, inst);
+  const riskUsedPct = (lossUSD/start)*100;
+  const rr = tpDist/slDist;
+
+  // Dollar move per 0.01 lot
+  const slDollarPer001 = calcPnL(0.01, slDist, inst);
+  const tpDollarPer001 = calcPnL(0.01, tpDist, inst);
+
+  const dlLimit=start*RULES.daily/100, mlLimit=start*RULES.max/100;
+  const dLoss=Math.max(0,day-cur), tLoss=Math.max(0,start-cur);
+  const dRemain=Math.max(0,dlLimit-dLoss), tRemain=Math.max(0,mlLimit-tLoss);
+  const maxChalLot=Math.max(inst.lotStep,Math.min(
+    calcLotFromRisk(dRemain,slDist,inst),
+    calcLotFromRisk(tRemain,slDist,inst),
+    inst.maxSafeLot*1.5
+  ));
+
+  const today=todayStr();
+  const todayHigh=NEWS.filter(e=>e.d===today&&e.imp==='high');
+  const isNewsDay=todayHigh.length>0;
+
+  currentCalc={tradeType,entry,sl,tp,slDist,tpDist,slPips,tpPips,
+    autoLot,safeLotVal,usedLot,lossUSD,profitUSD,riskUsedPct,rr,
+    slDollarPer001,tpDollarPer001,start,cur,day,riskAmt,
+    dlLimit,mlLimit,dLoss,tLoss,dRemain,tRemain,maxChalLot,
+    slValid,isNewsDay,todayHigh,inst};
 
   renderResults(currentCalc);
   renderAdvisor(currentCalc);
 }
 
-function renderResults(c) {
-  const badge = $('tradeBadge');
-  badge.className   = c.tradeType === 'BUY' ? 'buy' : 'sell';
-  badge.textContent = (c.tradeType === 'BUY' ? '▲' : '▼') + ' ' + c.tradeType;
+const fmt=n=>parseFloat(n).toFixed(2);
 
-  const sb = $('statusBadge');
-  let status, scls;
-  if (c.lossUSD > c.dailyRemaining || c.riskUsedPct > 3) {
-    status = '✕ CHALLENGE RISK'; scls = 'danger';
-  } else if (c.riskUsedPct <= 0.5 && c.rr >= 2) {
-    status = '✓ SAFE TRADE'; scls = 'safe';
-  } else if (c.riskUsedPct <= 1.5 && c.rr >= 1.5) {
-    status = '◈ ACCEPTABLE'; scls = 'ok';
-  } else {
-    status = '⚠ HIGH RISK'; scls = 'danger';
-  }
-  sb.textContent = status; sb.className = scls;
+function renderResults(c){
+  const badge=$('tradeBadge');
+  badge.className=c.tradeType==='BUY'?'buy':'sell';
+  badge.textContent=(c.tradeType==='BUY'?'▲':'▼')+' '+c.tradeType+' '+c.inst.name;
 
-  $('lossUSD').textContent  = '-$' + fmt(c.lossUSD);
-  $('lossSub').textContent  = c.slDist.toFixed(2) + ' pts · ' + c.slPips + ' pips';
-  $('rb-loss').className    = 'rbox ' + (c.lossUSD > c.dailyRemaining ? 'r' : c.lossUSD > c.dailyLossLimit * 0.5 ? 'am' : 'g');
+  const sb=$('statusBadge');
+  let st,sc;
+  if(c.isNewsDay){st='⚠ NEWS DAY';sc='danger';}
+  else if(c.lossUSD>c.dRemain||c.riskUsedPct>3){st='✕ CHALLENGE RISK';sc='danger';}
+  else if(c.riskUsedPct<=0.5&&c.rr>=2){st='✓ SAFE TRADE';sc='safe';}
+  else if(c.riskUsedPct<=1.5&&c.rr>=1.5){st='◈ ACCEPTABLE';sc='ok';}
+  else{st='⚠ HIGH RISK';sc='danger';}
+  sb.textContent=st; sb.className=sc;
 
-  $('profitUSD').textContent = '+$' + fmt(c.profitUSD);
-  $('profitSub').textContent = c.tpDist.toFixed(2) + ' pts · ' + c.tpPips + ' pips';
-  $('rb-profit').className   = 'rbox g';
+  $('lossUSD').textContent='-$'+fmt(c.lossUSD);
+  $('lossSub').textContent=c.slPips.toFixed(1)+' pips · '+c.slDist.toFixed(c.inst.pipSize<0.01?5:2)+' pts';
+  $('rb-loss').className='rbox '+(c.lossUSD>c.dRemain?'r':c.lossUSD>c.dlLimit*0.5?'am':'g');
 
-  $('autoLot').textContent    = fmt(c.autoLot);
-  $('autoLotSub').textContent = 'For $' + fmt(c.riskAmt) + ' risk';
-  $('rb-lot').className       = 'rbox ' + (c.autoLot > 0.2 ? 'r' : c.autoLot > 0.15 ? 'am' : 'go');
+  $('profitUSD').textContent='+$'+fmt(c.profitUSD);
+  $('profitSub').textContent=c.tpPips.toFixed(1)+' pips · '+c.tpDist.toFixed(c.inst.pipSize<0.01?5:2)+' pts';
+  $('rb-profit').className='rbox g';
 
-  $('safeLot').textContent = fmt(c.safeLotVal);
-  $('rb-safe').className   = 'rbox ' + (c.safeLotVal <= 0.10 ? 'g' : 'go');
+  $('autoLot').textContent=fmt(c.autoLot);
+  $('autoLotSub').textContent='For $'+fmt(c.riskAmt)+' risk';
+  $('rb-lot').className='rbox '+(c.autoLot>c.inst.maxSafeLot*1.5?'r':c.autoLot>c.inst.maxSafeLot?'am':'go');
 
-  $('riskUsed').textContent    = fmt(c.riskUsedPct) + '%';
-  $('riskUsedSub').textContent = '$' + fmt(c.lossUSD) + ' of $' + c.start.toLocaleString();
-  $('rb-risk').className       = 'rbox ' + (c.riskUsedPct > 2 ? 'r' : c.riskUsedPct > 1 ? 'am' : 'g');
+  $('safeLot').textContent=fmt(c.safeLotVal);
+  $('safeLotSub').textContent='Cap: '+c.inst.maxSafeLot+' lots';
+  $('rb-safe').className='rbox '+(c.safeLotVal<=c.inst.maxSafeLot*0.6?'g':'go');
 
-  $('rrRatio').textContent = '1 : ' + fmt(c.rr);
-  $('rrSub').textContent   = c.rr >= 3 ? 'Excellent' : c.rr >= 2 ? 'Good' : c.rr >= 1.5 ? 'Acceptable' : 'Low R:R';
-  $('rb-rr').className     = 'rbox ' + (c.rr >= 2 ? 'g' : c.rr >= 1.5 ? 'b' : '');
+  $('riskUsed').textContent=fmt(c.riskUsedPct)+'%';
+  $('riskUsedSub').textContent='$'+fmt(c.lossUSD)+' of $'+c.start.toLocaleString();
+  $('rb-risk').className='rbox '+(c.riskUsedPct>2?'r':c.riskUsedPct>1?'am':'g');
 
-  $('slPoints').textContent = c.slDist.toFixed(2);
-  $('tpPoints').textContent = c.tpDist.toFixed(2);
-  $('slPips').textContent   = c.slPips;
-  $('tpPips').textContent   = c.tpPips;
+  $('rrRatio').textContent='1 : '+fmt(c.rr);
+  $('rrSub').textContent=c.rr>=3?'Excellent':c.rr>=2?'Good':c.rr>=1.5?'Acceptable':'Low R:R';
+  $('rb-rr').className='rbox '+(c.rr>=2?'g':c.rr>=1.5?'b':'');
 
-  const riskW = (c.slDist / (c.slDist + c.tpDist)) * 100;
-  $('rrRiskBar').style.width    = riskW + '%';
-  $('rrBarLabel').textContent   = '1:' + fmt(c.rr);
-  $('rrRiskLabel').textContent   = 'RISK $' + c.lossUSD.toFixed(0);
-  $('rrRewardLabel').textContent = 'REWARD $' + c.profitUSD.toFixed(0);
+  // Points row
+  $('slPts').textContent=c.slPips.toFixed(1);
+  $('slPtsLbl').textContent='SL Pips';
+  $('tpPts').textContent=c.tpPips.toFixed(1);
+  $('tpPtsLbl').textContent='TP Pips';
+  $('slDollar').textContent='$'+c.slDollarPer001.toFixed(2);
+  $('tpDollar').textContent='$'+c.tpDollarPer001.toFixed(2);
 
-  const danger = Math.min(100,
-    (c.riskUsedPct / 4) * 35 +
-    (c.lossUSD / c.dailyLossLimit) * 35 +
-    (c.rr < 2 ? (2 - c.rr) * 15 : 0) +
-    (c.autoLot > 0.15 ? 15 : 0)
-  );
-  $('dangerBar').style.width      = danger.toFixed(0) + '%';
-  $('dangerBar').style.background = danger > 70 ? 'var(--red)' : danger > 40 ? 'var(--amber)' : 'var(--green)';
-  $('safetyScore').textContent    = danger < 30 ? '✓ SAFE' : danger < 60 ? '⚠ MODERATE' : '✕ DANGER';
-  $('safetyScore').style.color    = danger > 60 ? 'var(--red)' : danger > 30 ? 'var(--amber)' : 'var(--green)';
+  // Instrument detail box
+  $('instCalcInfo').style.display='block';
+  $('iciInst').textContent=c.inst.name+' '+c.inst.emoji;
+  $('iciSLdist').textContent=c.slDist.toFixed(c.inst.pipSize<0.001?6:c.inst.pipSize<0.01?5:c.inst.pipSize<0.1?4:2)+' ('+c.slPips.toFixed(1)+' pips)';
+  $('iciTPdist').textContent=c.tpDist.toFixed(c.inst.pipSize<0.001?6:c.inst.pipSize<0.01?5:c.inst.pipSize<0.1?4:2)+' ('+c.tpPips.toFixed(1)+' pips)';
+  $('iciPipVal').textContent='$'+c.inst.pipVal.toFixed(3)+' / 0.01 lot';
+  $('iciValSL').textContent='-$'+c.slDollarPer001.toFixed(4)+' (0.01 lot)';
+  $('iciValTP').textContent='+$'+c.tpDollarPer001.toFixed(4)+' (0.01 lot)';
+  $('iciFormula').textContent='lot = '+fmt(c.riskAmt)+' ÷ ('+c.slPips.toFixed(1)+' × $'+c.inst.pipVal+' × 100)';
+
+  // RR bars
+  const rw=(c.slDist/(c.slDist+c.tpDist))*100;
+  $('rrRiskBar').style.width=rw+'%';
+  $('rrBarLbl').textContent='1:'+fmt(c.rr);
+  $('rrRL').textContent='RISK $'+c.lossUSD.toFixed(0);
+  $('rrRwL').textContent='REWARD $'+c.profitUSD.toFixed(0);
+
+  // Safety meter
+  const danger=Math.min(100,(c.riskUsedPct/4)*30+(c.lossUSD/c.dlLimit)*30+(c.rr<2?(2-c.rr)*15:0)+(c.autoLot>c.inst.maxSafeLot?15:0)+(c.isNewsDay?10:0));
+  $('dangerBar').style.width=danger.toFixed(0)+'%';
+  $('dangerBar').style.background=danger>70?'var(--red)':danger>40?'var(--amber)':'var(--green)';
+  $('safetyScore').textContent=danger<30?'✓ SAFE':danger<60?'⚠ MODERATE':'✕ DANGER';
+  $('safetyScore').style.color=danger>60?'var(--red)':danger>30?'var(--amber)':'var(--green)';
 
   buildWarnings(c);
 }
 
-function renderAdvisor(c) {
-  const slDist      = c.slDist;
-  const start       = c.start;
-  const hardBudget  = Math.min(c.dailyRemaining, c.totalRemaining);
-  const profitDone  = Math.max(0, c.current - start);
-  const profitTarget= start * RULES.targetPct / 100;
-  const profitLeft  = Math.max(0.01, profitTarget - profitDone);
-
-  // Conservative: 0.5% risk, max 0.10 lot, never exceed 40% of remaining daily budget
-  const consRisk = Math.min(start * 0.005, hardBudget * 0.4);
-  const consLot  = Math.max(0.01, Math.min(parseFloat((consRisk / (slDist * 100)).toFixed(2)), 0.10));
-
-  // Optimal: 1% risk, calibrated so you need ~10 wins to reach target, never bust daily
-  const optRiskBase = Math.max(start * 0.008, profitLeft / (c.rr * 12));
-  const optRisk     = Math.min(optRiskBase, hardBudget * 0.55, start * 0.01);
-  const optLot      = Math.max(0.01, Math.min(parseFloat((optRisk / (slDist * 100)).toFixed(2)), 0.15));
-
-  // Aggressive: 1.5% risk, cap 0.20, never exceed 65% of remaining daily budget
-  const aggRisk = Math.min(start * 0.015, hardBudget * 0.65);
-  const aggLot  = Math.max(0.01, Math.min(parseFloat((aggRisk / (slDist * 100)).toFixed(2)), 0.20));
-
-  const consLoss = consLot * slDist * 100, consPnl = consLot * c.tpDist * 100;
-  const optLoss  = optLot  * slDist * 100, optPnl  = optLot  * c.tpDist * 100;
-  const aggLoss  = aggLot  * slDist * 100, aggPnl  = aggLot  * c.tpDist * 100;
-
-  $('advVal-cons').textContent = consLot.toFixed(2);
-  $('advSub-cons').textContent = '-$' + consLoss.toFixed(0) + ' / +$' + consPnl.toFixed(0);
-  $('advVal-opt').textContent  = optLot.toFixed(2);
-  $('advSub-opt').textContent  = '-$' + optLoss.toFixed(0) + ' / +$' + optPnl.toFixed(0);
-  $('advVal-agg').textContent  = aggLot.toFixed(2);
-  $('advSub-agg').textContent  = '-$' + aggLoss.toFixed(0) + ' / +$' + aggPnl.toFixed(0);
-
-  window._advLots = { cons: consLot, opt: optLot, agg: aggLot };
-
-  // Smart tip
-  const dailyUsedPct = (c.dailyLossUsed / start) * 100;
-  const totalUsedPct = (c.totalLossUsed  / start) * 100;
-  let tip = '';
-  if (c.dailyRemaining <= 0) {
-    tip = '🚨 Daily loss limit reached (4%). Stop trading for today to protect your challenge!';
-  } else if (c.totalRemaining <= 0) {
-    tip = '💀 Maximum drawdown (8%) reached. Challenge account is at risk. No more trades!';
-  } else if (profitTarget - profitDone <= 0) {
-    tip = '🏆 Profit target (8%) already reached! Lock in your profit — protect the account.';
-  } else if (c.rr < 1.5) {
-    tip = '📉 R:R of ' + fmt(c.rr) + ':1 is too low. Move TP further to get at least 2:1 before entering.';
-  } else if (dailyUsedPct > 2.5) {
-    tip = '⚠ Daily drawdown at ' + dailyUsedPct.toFixed(1) + '% (of 4% limit). Use CONSERVATIVE lot only — you are close to the daily cap.';
-  } else if (totalUsedPct > 5) {
-    tip = '🔴 Total drawdown at ' + totalUsedPct.toFixed(1) + '% (of 8% limit). Only $' + c.totalRemaining.toFixed(0) + ' buffer left. Minimum lots only.';
-  } else {
-    const winsNeeded = Math.ceil((profitTarget - profitDone) / (optPnl || 1));
-    tip = '✦ Optimal lot gives ~$' + optPnl.toFixed(0) + ' profit per winning trade. You need ~' + winsNeeded + ' more wins to hit the 8% target. Daily budget remaining: $' + c.dailyRemaining.toFixed(0) + '.';
+function buildWarnings(c){
+  const W=[];
+  const dUsedPct=(c.dLoss/c.start)*100, tUsedPct=(c.tLoss/c.start)*100;
+  if(c.isNewsDay){
+    W.push({cls:'wr',icon:'🚨',msg:'NEWS DAY — Maven prohibits news trading. Events: '+c.todayHigh.map(e=>e.n+' '+e.t+' ET').join(' | ')+'. Avoid 30 min before/after.'});
   }
-  $('advTip').innerHTML = tip;
+  if(!c.slValid) W.push({cls:'wam',icon:'⚠',msg:'SL direction wrong for '+c.tradeType+' on '+c.inst.name+'.'});
+  if(c.lossUSD>c.dRemain) W.push({cls:'wr',icon:'🚨',msg:'Loss ($'+fmt(c.lossUSD)+') exceeds daily budget ($'+fmt(c.dRemain)+'). Trade would FAIL challenge!'});
+  else if(c.lossUSD>c.dRemain*0.75) W.push({cls:'wam',icon:'⛔',msg:'Loss uses '+((c.lossUSD/c.dRemain)*100).toFixed(0)+'% of remaining daily budget.'});
+  if(dUsedPct>=4) W.push({cls:'wr',icon:'🔴',msg:'4% daily limit reached. Stop trading today!'});
+  else if(dUsedPct>3) W.push({cls:'wr',icon:'🔴',msg:'Daily at '+dUsedPct.toFixed(2)+'% — '+(4-dUsedPct).toFixed(2)+'% left.'});
+  else if(dUsedPct>2) W.push({cls:'wam',icon:'⚠',msg:'Daily at '+dUsedPct.toFixed(2)+'% of 4%. Be selective.'});
+  if(tUsedPct>=8) W.push({cls:'wr',icon:'💀',msg:'8% max drawdown reached. Challenge failed.'});
+  else if(tUsedPct>6) W.push({cls:'wr',icon:'💀',msg:'Total at '+tUsedPct.toFixed(2)+'% — very close to 8% limit.'});
+  if(c.riskUsedPct>2) W.push({cls:'wr',icon:'🚨',msg:'Risk '+fmt(c.riskUsedPct)+'% is dangerously high.'});
+  else if(c.riskUsedPct>1) W.push({cls:'wam',icon:'⚠',msg:'Risk '+fmt(c.riskUsedPct)+'%. Recommended max 1%.'});
+  if(c.rr<1) W.push({cls:'wr',icon:'📉',msg:'R:R below 1:1. Never trade where risk > reward.'});
+  else if(c.rr<1.5) W.push({cls:'wam',icon:'📉',msg:'R:R '+fmt(c.rr)+':1 is low. Aim for 2:1 minimum.'});
+  // Instrument-specific
+  if(c.inst.cat==='crypto'&&c.slPips<50) W.push({cls:'wbl',icon:'ℹ',msg:'Tight SL on '+c.inst.name+'. Crypto is highly volatile — consider wider stops.'});
+  if(c.inst.cat==='forex'&&c.slPips<5)  W.push({cls:'wbl',icon:'ℹ',msg:'SL is under 5 pips on '+c.inst.name+'. Spread alone could stop you out.'});
+  if(c.riskUsedPct<=0.5&&c.rr>=2&&c.lossUSD<c.dRemain*0.3&&!c.isNewsDay)
+    W.push({cls:'wgr',icon:'✅',msg:'Risk '+fmt(c.riskUsedPct)+'% · R:R '+fmt(c.rr)+':1 · Instrument: '+c.inst.name+'. Safe parameters.'});
+  $('warningsBox').innerHTML=W.map(w=>`<div class="warn-item ${w.cls}"><span class="wi">${w.icon}</span><span>${w.msg}</span></div>`).join('');
 }
 
-function applyLot(type) {
-  if (!window._advLots || !window._advLots[type]) return;
-  $('lotSize').value = window._advLots[type].toFixed(2);
+// ═══════════════════════════════════════════════
+//  AI ADVISOR
+// ═══════════════════════════════════════════════
+function renderAdvisor(c){
+  const inst=c.inst, start=c.start;
+  const budget=Math.min(c.dRemain,c.tRemain);
+  const tgt=start*RULES.target/100, done=Math.max(0,c.cur-start);
+  const left=Math.max(0.01,tgt-done);
+  const nm=c.isNewsDay?0.5:1;
+
+  const consLot=Math.max(inst.lotStep,Math.min(
+    calcLotFromRisk(Math.min(start*0.005,budget*0.4)*nm, c.slDist, inst),
+    inst.maxSafeLot*0.6));
+  const optLot=Math.max(inst.lotStep,Math.min(
+    calcLotFromRisk(Math.min(Math.max(start*0.008,left/(c.rr*12)),budget*0.55,start*0.01)*nm, c.slDist, inst),
+    inst.maxSafeLot));
+  const aggLot=Math.max(inst.lotStep,Math.min(
+    calcLotFromRisk(Math.min(start*0.015,budget*0.65)*nm, c.slDist, inst),
+    inst.maxSafeLot*1.5));
+
+  const cL=calcPnL(consLot,c.slDist,inst), cP=calcPnL(consLot,c.tpDist,inst);
+  const oL=calcPnL(optLot,c.slDist,inst),  oP=calcPnL(optLot,c.tpDist,inst);
+  const aL=calcPnL(aggLot,c.slDist,inst),  aP=calcPnL(aggLot,c.tpDist,inst);
+
+  $('av-cons').textContent=consLot.toFixed(2); $('as-cons').textContent='-$'+cL.toFixed(0)+' / +$'+cP.toFixed(0);
+  $('av-opt').textContent=optLot.toFixed(2);   $('as-opt').textContent='-$'+oL.toFixed(0)+' / +$'+oP.toFixed(0);
+  $('av-agg').textContent=aggLot.toFixed(2);   $('as-agg').textContent='-$'+aL.toFixed(0)+' / +$'+aP.toFixed(0);
+  window._advLots={cons:consLot,opt:optLot,agg:aggLot};
+
+  const dPct=(c.dLoss/start)*100, tPct=(c.tLoss/start)*100;
+  let tip='';
+  if(c.isNewsDay) tip='🚨 NEWS DAY ('+inst.name+'): Lot sizes halved. Avoid trades 30 min before/after: '+c.todayHigh.map(e=>e.n+' '+e.t+' ET').join(', ')+'.';
+  else if(c.dRemain<=0) tip='🚨 Daily limit reached. No more trades today!';
+  else if(c.tRemain<=0) tip='💀 Max drawdown reached!';
+  else if(done>=tgt) tip='🏆 8% target reached! Protect your account.';
+  else if(c.rr<1.5) tip='📉 R:R '+fmt(c.rr)+':1 too low for '+inst.name+'. Move TP further.';
+  else if(dPct>2.5) tip='⚠ '+inst.name+' daily at '+dPct.toFixed(1)+'%. Conservative lot only.';
+  else if(tPct>5) tip='🔴 Total DD at '+tPct.toFixed(1)+'%. Minimum lots only.';
+  else{const w=Math.ceil(left/(oP||1));tip='✦ ['+inst.name+'] Optimal lot → ~$'+oP.toFixed(0)+'/win at 1:'+fmt(c.rr)+'. Need ~'+w+' more wins for 8% target. Budget: $'+c.dRemain.toFixed(0)+'.';}
+  $('advTip').innerHTML=tip;
+}
+
+function applyLot(t){
+  if(!window._advLots[t]) return;
+  $('lotSize').value=window._advLots[t].toFixed(2);
   calculate();
 }
-
-function buildWarnings(c) {
-  const W = [];
-  const dailyUsedPct = (c.dailyLossUsed / c.start) * 100;
-  const totalUsedPct = (c.totalLossUsed  / c.start) * 100;
-
-  if (!c.slValid)
-    W.push({cls:'wam',icon:'⚠',msg:'SL direction is wrong for a ' + c.tradeType + '. Check your stop loss price.'});
-
-  if (c.lossUSD > c.dailyRemaining)
-    W.push({cls:'wr',icon:'🚨',msg:'This trade\'s loss ($' + fmt(c.lossUSD) + ') exceeds your remaining daily budget ($' + fmt(c.dailyRemaining) + '). This trade would FAIL your challenge!'});
-  else if (c.lossUSD > c.dailyRemaining * 0.75)
-    W.push({cls:'wam',icon:'⛔',msg:'Loss uses ' + ((c.lossUSD/c.dailyRemaining)*100).toFixed(0) + '% of remaining daily budget. Reduce lot size.'});
-
-  if (dailyUsedPct >= 4)
-    W.push({cls:'wr',icon:'🔴',msg:'Daily loss limit (4%) hit! You must stop trading today or risk failing the challenge.'});
-  else if (dailyUsedPct > 3)
-    W.push({cls:'wr',icon:'🔴',msg:'Daily loss at ' + dailyUsedPct.toFixed(2) + '% — only ' + (4-dailyUsedPct).toFixed(2) + '% left. Stop trading today.'});
-  else if (dailyUsedPct > 2)
-    W.push({cls:'wam',icon:'⚠',msg:'Daily loss at ' + dailyUsedPct.toFixed(2) + '% of 4% limit. Be very selective with entries.'});
-
-  if (totalUsedPct >= 8)
-    W.push({cls:'wr',icon:'💀',msg:'Max drawdown (8%) reached. Challenge failed. No more trading!'});
-  else if (totalUsedPct > 6)
-    W.push({cls:'wr',icon:'💀',msg:'Total drawdown at ' + totalUsedPct.toFixed(2) + '% — dangerously close to the 8% limit. Minimum lots only.'});
-  else if (totalUsedPct > 4)
-    W.push({cls:'wam',icon:'⛔',msg:'Total drawdown at ' + totalUsedPct.toFixed(2) + '% of 8% max. Trade carefully.'});
-
-  if (c.riskUsedPct > 2)
-    W.push({cls:'wr',icon:'🚨',msg:'Risk is ' + fmt(c.riskUsedPct) + '% per trade — dangerously high for a prop challenge.'});
-  else if (c.riskUsedPct > 1)
-    W.push({cls:'wam',icon:'⚠',msg:'Risk is ' + fmt(c.riskUsedPct) + '%. Recommended max is 1% per trade to pass safely.'});
-
-  if (c.rr < 1)
-    W.push({cls:'wr',icon:'📉',msg:'R:R below 1:1. Never trade when your risk is bigger than your reward.'});
-  else if (c.rr < 1.5)
-    W.push({cls:'wam',icon:'📉',msg:'R:R of ' + fmt(c.rr) + ':1 is low. You need at least 60%+ win rate to be profitable here.'});
-
-  if (c.slDist < 2)
-    W.push({cls:'wbl',icon:'ℹ',msg:'SL is very tight (' + c.slDist.toFixed(2) + ' pts). Gold spikes frequently — wider SL avoids premature stop-outs.'});
-
-  if (c.riskUsedPct <= 0.5 && c.rr >= 2 && c.lossUSD < c.dailyRemaining * 0.3)
-    W.push({cls:'wgr',icon:'✅',msg:'Risk ' + fmt(c.riskUsedPct) + '% · R:R ' + fmt(c.rr) + ':1 · Daily impact ' + ((c.lossUSD/c.dailyLossLimit)*100).toFixed(1) + '%. Trade within safe challenge parameters.'});
-
-  $('warningsBox').innerHTML = W.map(w =>
-    `<div class="warn-item ${w.cls}"><span class="wi">${w.icon}</span><span>${w.msg}</span></div>`
-  ).join('');
-}
-
-function useSafeLot() {
-  if (!currentCalc) return;
-  $('lotSize').value = Math.max(0.01, Math.min(currentCalc.safeLotVal, currentCalc.maxSafeLotChallenge)).toFixed(2);
+function useSafeLot(){
+  if(!currentCalc) return;
+  $('lotSize').value=Math.max(activeInst.lotStep,Math.min(currentCalc.safeLotVal,currentCalc.maxChalLot)).toFixed(2);
   calculate();
 }
-
-function resetAll() {
-  ['entryPrice','stopLoss','takeProfit','lotSize'].forEach(id => $(id).value = '');
-  currentCalc = null;
-  $('tradeBadge').className = 'none'; $('tradeBadge').textContent = '— WAITING —';
-  $('statusBadge').className = 'idle'; $('statusBadge').textContent = '● IDLE';
+function resetAll(){
+  ['entryPrice','stopLoss','takeProfit','lotSize'].forEach(id=>$(id).value='');
+  currentCalc=null;
+  $('tradeBadge').className='none'; $('tradeBadge').textContent='— WAITING —';
+  $('statusBadge').className='idle'; $('statusBadge').textContent='● IDLE';
   ['lossUSD','profitUSD','autoLot','safeLot','riskUsed','rrRatio','lossSub','profitSub',
-   'autoLotSub','riskUsedSub','rrSub','slPoints','tpPoints','slPips','tpPips',
-   'rrBarLabel','safetyScore','advVal-cons','advVal-opt','advVal-agg',
-   'advSub-cons','advSub-opt','advSub-agg'
-  ].forEach(id => { const e=$(id); if(e) e.textContent='—'; });
-  $('rrRiskLabel').textContent='RISK'; $('rrRewardLabel').textContent='REWARD';
+   'autoLotSub','safeLotSub','riskUsedSub','rrSub','slPts','tpPts','slDollar','tpDollar',
+   'rrBarLbl','safetyScore','av-cons','av-opt','av-agg','as-cons','as-opt','as-agg'
+  ].forEach(id=>{const e=$(id);if(e)e.textContent='—';});
+  $('rrRL').textContent='RISK'; $('rrRwL').textContent='REWARD';
   $('rrRiskBar').style.width='50%'; $('dangerBar').style.width='0%';
-  $('warningsBox').innerHTML='';
-  $('advTip').innerHTML='💡 Enter your trade details above to get intelligent lot size recommendations.';
-  ['rb-loss','rb-profit','rb-lot','rb-safe','rb-risk','rb-rr'].forEach(id => $(id).className='rbox');
+  $('warningsBox').innerHTML=''; $('instCalcInfo').style.display='none';
+  $('advTip').innerHTML='💡 Select an instrument and enter trade details to get recommendations.';
 }
 
-function addToLog() {
-  if (!currentCalc) { alert('Calculate a trade first.'); return; }
-  logCounter++;
-  const c = currentCalc;
-  tradeLog.unshift({ id:logCounter, type:c.tradeType, entry:c.entry, sl:c.sl, tp:c.tp,
-    lot:c.usedLot, loss:c.lossUSD, profit:c.profitUSD, rr:c.rr, riskPct:c.riskUsedPct,
-    time:new Date().toLocaleTimeString() });
+// ═══════════════════════════════════════════════
+//  NEWS GUARD
+// ═══════════════════════════════════════════════
+function todayStr(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');}
+function addDays(d,n){const p=d.split('-');const dt=new Date(+p[0],+p[1]-1,+p[2]);dt.setDate(dt.getDate()+n);return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');}
+function dlabel(d){const p=d.split('-');return new Date(+p[0],+p[1]-1,+p[2]).toLocaleDateString('en-US',{month:'short',day:'numeric'});}
+function dname(d){const p=d.split('-');return new Date(+p[0],+p[1]-1,+p[2]).toLocaleDateString('en-US',{weekday:'short'});}
+function getWeek(){
+  const today=todayStr(),p=today.split('-');
+  const d=new Date(+p[0],+p[1]-1,+p[2]);
+  const dow=d.getDay();
+  const mon=new Date(d); mon.setDate(d.getDate()-(dow===0?6:dow-1));
+  return Array.from({length:7},(_,i)=>{const x=new Date(mon);x.setDate(mon.getDate()+i);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');});
+}
+
+function initNewsGuard(){
+  const today=todayStr(), tom=addDays(today,1);
+  $('npDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+  const todayEvts=NEWS.filter(e=>e.d===today);
+  const tomHigh=NEWS.filter(e=>e.d===tom&&e.imp==='high');
+  const highToday=todayEvts.filter(e=>e.imp==='high');
+  // ET time check
+  const now=new Date();
+  const et=new Date(now.getTime()+(now.getTimezoneOffset()-240)*60000);
+  const etMins=et.getHours()*60+et.getMinutes();
+  let inWindow=false, nextEvt=null, nextMins=9999;
+  todayEvts.forEach(e=>{
+    const [h,m]=e.t.split(':').map(Number);
+    const em=h*60+m, diff=em-etMins;
+    if(diff>=-30&&diff<=30&&e.imp==='high') inWindow=true;
+    if(diff>0&&diff<nextMins){nextMins=diff;nextEvt=e;}
+  });
+  let state=highToday.length>0?(inWindow?'danger':'warning'):tomHigh.length>0?'warning':'safe';
+  const panel=$('newsPanel');
+  panel.className='news-panel '+state;
+  const dot=$('npDot'); dot.className='np-dot '+state;
+  const t=$('npTitle'), hl=$('npHeadline'), sl=$('npSub'), ic=$('npIcon');
+  if(state==='danger'){
+    t.style.color='var(--red)'; t.textContent='🚨 NEWS WINDOW — NO TRADING';
+    ic.textContent='🚫'; hl.className='np-headline danger';
+    hl.textContent='DO NOT TRADE — NEWS WINDOW ACTIVE';
+    sl.textContent='Within 30 min of a high-impact event. Maven rules apply.';
+  } else if(state==='warning'&&highToday.length>0){
+    t.style.color='var(--amber)'; t.textContent='⚠ NEWS DAY — CAUTION';
+    ic.textContent='⚠️'; hl.className='np-headline warning';
+    hl.textContent='HIGH-IMPACT NEWS TODAY — CHECK TIMES BELOW';
+    sl.textContent='Avoid trading 30 min before and after each event.';
+  } else if(state==='warning'){
+    t.style.color='var(--amber)'; t.textContent='⚠ NEWS TOMORROW';
+    ic.textContent='📋'; hl.className='np-headline warning';
+    hl.textContent='HIGH-IMPACT NEWS TOMORROW — PLAN AHEAD';
+    sl.textContent='Consider closing positions before tomorrow\'s events.';
+  } else {
+    t.style.color='var(--green)'; t.textContent='📰 News Guard';
+    ic.textContent='✅'; hl.className='np-headline safe';
+    hl.textContent='CLEAR TO TRADE'; sl.textContent='No high-impact news today.';
+  }
+  // Today events
+  if(todayEvts.length>0){
+    $('todayArea').style.display='block';
+    $('todayList').innerHTML=todayEvts.map(e=>{
+      const[h,m]=e.t.split(':').map(Number),em=h*60+m,diff=em-etMins;
+      const isAct=diff>=-30&&diff<=30,isPast=diff<-30;
+      const sts=isPast?'✓':'isAct'?'🔴 LIVE':'⏳';
+      return `<div class="news-evt ${isAct?'today':isPast?'':'today'}">
+        <span class="ei ${e.imp}"></span><span class="ed">${e.t} ET</span>
+        <span class="en">${e.n}</span>
+        <span class="etag ${e.imp==='high'?'tag-r':'tag-a'}">${e.imp==='high'?'HIGH':'MED'}</span>
+        <span style="font-size:8px;color:var(--muted);font-family:var(--mono)">${isPast?'DONE':isAct?'🔴 NOW':'SOON'}</span>
+      </div>`;
+    }).join('');
+  } else $('todayArea').style.display='none';
+  // Countdown
+  if(nextEvt&&nextMins>0){
+    $('cdArea').style.display='block';
+    startCD(nextEvt,et);
+  } else {$('cdArea').style.display='none';if(cdInterval){clearInterval(cdInterval);cdInterval=null;}}
+  // Week strip
+  const week=getWeek();
+  $('weekStrip').innerHTML=week.map(d=>{
+    const evts=NEWS.filter(e=>e.d===d);
+    const hh=evts.some(e=>e.imp==='high'),hm=evts.some(e=>e.imp==='medium');
+    const isT=d===today;
+    return `<div class="day-box${isT?' tc':''}${hh?' hh':hm?' hm':''}" title="${evts.map(e=>e.n).join(', ')||'Clear'}">
+      <div class="db-n">${dname(d)}</div>
+      <div class="db-d">${d.split('-')[2]}</div>
+      <div class="db-dots">${evts.map(e=>`<span class="db-dot" style="background:${e.imp==='high'?'var(--red)':e.imp==='medium'?'var(--amber)':'var(--green)'}"></span>`).join('')}</div>
+    </div>`;
+  }).join('');
+  // Upcoming
+  const cut=addDays(today,14);
+  const up=NEWS.filter(e=>e.d>today&&e.d<=cut&&e.imp==='high').slice(0,7);
+  $('upcomingList').innerHTML=[...NEWS.filter(e=>e.d===tom&&e.imp==='high'),...up.filter(e=>e.d!==tom)].slice(0,6).map(e=>{
+    const isTom=e.d===tom;
+    return `<div class="news-evt ${isTom?'tomorrow':'week'}">
+      <span class="ei high"></span><span class="ed">${dlabel(e.d)}</span>
+      <span class="en">${e.n}</span>
+      <span class="etag ${isTom?'tag-a':'tag-r'}">${isTom?'TOMORROW':'HIGH'}</span>
+      <span class="et2">${e.t} ET</span>
+    </div>`;
+  }).join('')||'<div style="font-size:10px;color:var(--muted);font-family:var(--mono);padding:6px 0">No high-impact events in 14 days</div>';
+}
+
+function startCD(evt,etNow){
+  if(cdInterval) clearInterval(cdInterval);
+  const[h,m]=evt.t.split(':').map(Number);
+  function tick(){
+    const n=new Date(),et2=new Date(n.getTime()+(n.getTimezoneOffset()-240)*60000);
+    const tgt=new Date(et2); tgt.setHours(h,m,0,0);
+    const diff=Math.max(0,tgt-et2);
+    $('cdH').textContent=String(Math.floor(diff/3600000)).padStart(2,'0');
+    $('cdM').textContent=String(Math.floor(diff%3600000/60000)).padStart(2,'0');
+    $('cdS').textContent=String(Math.floor(diff%60000/1000)).padStart(2,'0');
+    if(diff<=0){clearInterval(cdInterval);$('cdArea').style.display='none';}
+  }
+  tick(); cdInterval=setInterval(tick,1000);
+}
+
+// ═══════════════════════════════════════════════
+//  TRADE LOG
+// ═══════════════════════════════════════════════
+function addToLog(){
+  if(!currentCalc){alert('Calculate a trade first.');return;}
+  logCounter++;const c=currentCalc;
+  tradeLog.unshift({id:logCounter,inst:c.inst.name,type:c.tradeType,
+    entry:c.entry,sl:c.sl,tp:c.tp,lot:c.usedLot,
+    loss:c.lossUSD,profit:c.profitUSD,rr:c.rr,riskPct:c.riskUsedPct,
+    newsDay:c.isNewsDay,time:new Date().toLocaleTimeString()});
   renderLog();
 }
-function deleteLog(id) { tradeLog = tradeLog.filter(t => t.id !== id); renderLog(); }
-function clearLog() { tradeLog = []; logCounter = 0; renderLog(); }
-function renderLog() {
-  const list = $('logList');
-  if (!tradeLog.length) {
-    list.innerHTML = '<div class="log-empty">No trades logged yet.</div>';
-    ['logCount','logAvgRR','logTotalRisk','logAvgLot'].forEach(id => $(id).textContent = id==='logCount'?'0':id==='logTotalRisk'?'$0':'—');
+function deleteLog(id){tradeLog=tradeLog.filter(t=>t.id!==id);renderLog();}
+function clearLog(){tradeLog=[];logCounter=0;renderLog();}
+function renderLog(){
+  const list=$('logList');
+  if(!tradeLog.length){
+    list.innerHTML='<div class="log-empty">No trades logged yet.</div>';
+    ['logCount','logAvgRR','logTotRisk','logAvgLot'].forEach(id=>$(id).textContent=id==='logCount'?'0':id==='logTotRisk'?'$0':'—');
     return;
   }
-  $('logCount').textContent    = tradeLog.length;
-  $('logAvgRR').textContent    = '1:' + (tradeLog.reduce((s,t)=>s+t.rr,0)/tradeLog.length).toFixed(2);
-  $('logTotalRisk').textContent= '$' + tradeLog.reduce((s,t)=>s+t.loss,0).toFixed(2);
-  $('logAvgLot').textContent   = (tradeLog.reduce((s,t)=>s+t.lot,0)/tradeLog.length).toFixed(2);
-  list.innerHTML = tradeLog.map(t => `
-    <div class="log-item">
+  $('logCount').textContent=tradeLog.length;
+  $('logAvgRR').textContent='1:'+(tradeLog.reduce((s,t)=>s+t.rr,0)/tradeLog.length).toFixed(2);
+  $('logTotRisk').textContent='$'+tradeLog.reduce((s,t)=>s+t.loss,0).toFixed(2);
+  $('logAvgLot').textContent=(tradeLog.reduce((s,t)=>s+t.lot,0)/tradeLog.length).toFixed(2);
+  list.innerHTML=tradeLog.map(t=>`
+    <div class="log-item" style="${t.newsDay?'border-color:var(--amber)':''}">
       <span class="lbadge ${t.type.toLowerCase()}">${t.type}</span>
+      <span style="font-size:9px;color:var(--gold);font-family:var(--mono)">${t.inst}</span>
+      ${t.newsDay?'<span style="font-size:8px;color:var(--amber)">📰</span>':''}
       <div class="l-info">
-        <div>${t.entry.toFixed(2)} → SL ${t.sl.toFixed(2)} / TP ${t.tp.toFixed(2)}</div>
+        <div>${t.entry} → SL ${t.sl} / TP ${t.tp}</div>
         <div>Lot ${t.lot.toFixed(2)} · ${t.riskPct.toFixed(2)}% · -$${t.loss.toFixed(2)} / +$${t.profit.toFixed(2)} · ${t.time}</div>
       </div>
       <span class="l-rr">1:${t.rr.toFixed(2)}</span>
@@ -898,19 +1240,25 @@ function renderLog() {
     </div>`).join('');
 }
 
-function toggleCol(id, btn) {
-  const el = $(id), open = btn.classList.contains('open');
-  if (open) { el.style.maxHeight='0'; btn.classList.remove('open'); btn.querySelector('.arr').style.transform='rotate(0deg)'; }
-  else { el.style.maxHeight=el.scrollHeight+'px'; btn.classList.add('open'); btn.querySelector('.arr').style.transform='rotate(180deg)'; }
+function toggleCol(id,btn){
+  const el=$(id),open=btn.classList.contains('open');
+  if(open){el.style.maxHeight='0';btn.classList.remove('open');btn.querySelector('.arr').style.transform='rotate(0deg)';}
+  else{el.style.maxHeight=el.scrollHeight+'px';btn.classList.add('open');btn.querySelector('.arr').style.transform='rotate(180deg)';}
 }
 
-['entryPrice','stopLoss','takeProfit','lotSize'].forEach(id => $(id).addEventListener('input', calculate));
-['startBal','currentBal','dayStartBal'].forEach(id => $(id).addEventListener('input', updateChallenge));
-$('riskPct').addEventListener('input', syncRiskFromPct);
-$('riskAmt').addEventListener('input', syncRiskFromAmt);
-$('startBal').addEventListener('input', () => document.querySelectorAll('.pbtn').forEach(b => b.classList.remove('active')));
+// ─── Event listeners ───
+['entryPrice','stopLoss','takeProfit','lotSize'].forEach(id=>$(id).addEventListener('input',calculate));
+['startBal','currentBal','dayStartBal'].forEach(id=>$(id).addEventListener('input',updateChallenge));
+$('riskPct').addEventListener('input',syncRiskFromPct);
+$('riskAmt').addEventListener('input',syncRiskFromAmt);
+$('startBal').addEventListener('input',()=>document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('active')));
 
+// ─── Init ───
+buildInstGrid('metals');
+updateInstInfo();
+initNewsGuard();
 updateChallenge();
+setInterval(initNewsGuard,60000);
 </script>
 </body>
 </html>
